@@ -1,0 +1,86 @@
+# String file for Bliss Mixer plugin
+
+BLISSMIXER
+	EN	Bliss Mixer
+
+BLISSMIXER_DESC
+	EN	Bliss Mixer for Don't Stop the Music
+
+BLISSMIXER_FILTER_GENRES
+	EN	Restrict genres
+
+BLISSMIXER_FILTER_GENRES_DESC
+	EN	Restrict mix to genres similar to that of the seed. Requires configuring genre groups (below). (Default: Yes)
+
+BLISSMIXER_FILTER_XMAS
+	EN	Exclude 'Christmas' genre
+
+BLISSMIXER_FILTER_XMAS_DESC
+	EN	Exclude tracks tagged with 'Christmas' genre, unless in December (Default: Yes)
+
+BLISSMIXER_MIN_DURATION
+	EN	Minimum duration
+
+BLISSMIXER_MIN_DURATION_DESC
+	EN	Restrict to songs with a duration (in seconds) longer than this. Set to 0 for no minimum.
+
+BLISSMIXER_MAX_DURATION
+	EN	Maximum duration
+
+BLISSMIXER_MAX_DURATION_DESC
+	EN	Restrict to songs with a duration (in seconds) less than this. Set to 0 for no maximum.
+
+BLISSMIXER_MIX
+	EN	Bliss
+
+BLISSMIXER_IGNORE_GENRE_MIX
+	EN	Bliss (Ignore Genre)
+
+DEBUG_PLUGIN_BLISSMIXER
+	EN	Bliss Mixer
+
+BLISSMIXER_NO_REPEAT_ARTIST
+	EN	Don't repeat artist for x tracks
+
+BLISSMIXER_NO_REPEAT_ARTIST_DESC
+	EN	Attempt to not use the same artist for the specified number of tracks. Artist may still repeat if there are too few candidate tracks.
+
+BLISSMIXER_NO_REPEAT_ALBUM
+	EN	Don't repeat album for x tracks
+
+BLISSMIXER_NO_REPEAT_ALBUM_DESC
+	EN	Attempt to not use the tracks from an album for the specified number of tracks. Tracks from same album may still repeat if there are too few candidate tracks, or the album is a 'Various Artists' album.
+
+BLISSMIXER_NO_REPEAT_TRACK
+	EN	Don't repeat track for x tracks
+
+BLISSMIXER_NO_REPEAT_TRACK_DESC
+	EN	Prevent a track from being repeated within the specified limit.
+
+BLISSMIXER_NUM_DSTM_TRACKS
+	EN	Number of mixer tracks
+
+BLISSMIXER_NUM_DSTM_TRACKS_DESC
+	EN	Number of tracks to add to the play queue when run as a mixer for "Don't Stop the Music"
+
+BLISSMIXER_GENRE_GROUPS
+	EN	Genre groups
+
+BLISSMIXER_GENRE_GROUPS_DESC
+	EN	Define a list of genre groups. When filtering by genre only similar tracks within a track's genre group will be used. (If a track is not in a group, then only similar tracks that are also not in a group will be used.) Groups are configured as a semi-colon separated list of genre names (e.g. Pop; Dance) with each new group on a new line (empty lines are ignored). To enable filtering by specific genre then create a group with just that genre.
+
+BLISSMIXER_GENRE_NOTE
+	EN	Mixes are based upon the tonal attributes of tracks. However, you may also elect to restrict mixes to groups of related genres (e.g. 'Hard Rock' and 'Rock'). If you then enable filtering by genre, this will allow tracks with different genres but within the same group to be mixed.
+
+BLISSMIXER_HOST
+	EN	Mixer hostname
+
+BLISSMIXER_HOST_DESC
+	EN	Hostname, or IP address, on which the mixer is running.
+
+BLISSMIXER_PORT
+	EN	Mixer port
+
+BLISSMIXER_PORT_DESC
+	EN	Port number on which the mixer is listening.
+

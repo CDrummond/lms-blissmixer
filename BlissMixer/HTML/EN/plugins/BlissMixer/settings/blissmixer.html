@@ -1,0 +1,63 @@
+[% PROCESS settings/header.html %]
+
+    [% WRAPPER settingSection %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_NO_REPEAT_ARTIST" desc="BLISSMIXER_NO_REPEAT_ARTIST_DESC" %]
+            <input type="text" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_artist" id="no_repeat_artist" value="[% prefs.pref_no_repeat_artist %]" size="5">
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_NO_REPEAT_ALBUM" desc="BLISSMIXER_NO_REPEAT_ALBUM_DESC" %]
+            <input type="text" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_album" id="no_repeat_album" value="[% prefs.pref_no_repeat_album %]" size="5">
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_NO_REPEAT_TRACK" desc="BLISSMIXER_NO_REPEAT_TRACK_DESC" %]
+            <input type="text" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_track" id="no_repeat_track" value="[% prefs.pref_no_repeat_track %]" size="5">
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_MIN_DURATION" desc="BLISSMIXER_MIN_DURATION_DESC" %]
+            <input type="text" class="stdedit" name="pref_min_duration" id="min_duration" value="[% prefs.pref_min_duration %]" size="5">
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_MAX_DURATION" desc="BLISSMIXER_MAX_DURATION_DESC" %]
+            <input type="text" class="stdedit" name="pref_max_duration" id="max_duration" value="[% prefs.pref_max_duration %]" size="5">
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_NUM_DSTM_TRACKS" desc="BLISSMIXER_NUM_DSTM_TRACKS_DESC" %]
+            <input type="text" class="stdedit sliderInput_2_20_1" name="pref_dstm_tracks" id="dstm_tracks" value="[% prefs.pref_dstm_tracks %]" size="5">
+        [% END %]
+
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+        <b>[% "GENRES" | string %]</b><br/>
+        <div style="opacity:0.6">[% "BLISSMIXER_GENRE_NOTE" | string %]</div><br/>
+
+        [% WRAPPER settingGroup title="BLISSMIXER_FILTER_GENRES" desc="BLISSMIXER_FILTER_GENRES_DESC" %]
+            <select class="stdedit" name="pref_filter_genres" id="filter_genres">
+                <option [% IF NOT prefs.filter_genres %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+                <option [% IF prefs.filter_genres %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+            </select>
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_FILTER_XMAS" desc="BLISSMIXER_FILTER_XMAS_DESC" %]
+            <select class="stdedit" name="pref_filter_xmas" id="filter_xmas">
+                <option [% IF NOT prefs.filter_xmas %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+                <option [% IF prefs.filter_xmas %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+            </select>
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_GENRE_GROUPS" desc="BLISSMIXER_GENRE_GROUPS_DESC" %]
+            <textarea class="stdedit" name="pref_genre_groups" id="genre_groups" cols="80" rows="5">[% prefs.pref_genre_groups %]</textarea>
+        [% END %]
+
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+
+        [% WRAPPER settingGroup title="BLISSMIXER_HOST" desc="BLISSMIXER_DESC" %]
+            <input type="text" class="stdedit" name="pref_host" id="host" value="[% prefs.pref_host %]" size="15">
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_PORT" desc="BLISSMIXER_PORT_DESC" %]
+            <input type="text" class="stdedit" name="pref_port" id="port" value="[% prefs.pref_port %]" size="5">
+        [% END %]
+
+    [% END %]
+
+[% PROCESS settings/footer.html %]
