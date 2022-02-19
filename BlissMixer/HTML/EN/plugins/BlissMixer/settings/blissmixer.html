@@ -48,16 +48,6 @@
             <textarea class="stdedit" name="pref_genre_groups" id="genre_groups" cols="80" rows="5">[% prefs.pref_genre_groups %]</textarea>
         [% END %]
 
-        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
-
-        [% WRAPPER settingGroup title="BLISSMIXER_HOST" desc="BLISSMIXER_DESC" %]
-            <input type="text" class="stdedit" name="pref_host" id="host" value="[% prefs.pref_host %]" size="15">
-        [% END %]
-
-        [% WRAPPER settingGroup title="BLISSMIXER_PORT" desc="BLISSMIXER_PORT_DESC" %]
-            <input type="text" class="stdedit" name="pref_port" id="port" value="[% prefs.pref_port %]" size="5">
-        [% END %]
-
     [% END %]
 
 [% PROCESS settings/footer.html %]
