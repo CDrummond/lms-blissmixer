@@ -136,7 +136,7 @@ sub _startMixer {
         return 0;
     }
 
-    my $db = Slim::Utils::Prefs::dir() . "/" . DB_NAME;
+    my $db = $serverprefs->get('cachedir') . "/" . DB_NAME;
     if ($allow_uploads == 0) {
         if (! -e $db) {
             $log->warn("No database ($db)");
