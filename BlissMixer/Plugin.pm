@@ -38,6 +38,7 @@ use constant MAX_PREVIOUS_TRACKS => 200;
 use constant DEF_MAX_PREVIOUS_TRACKS => 100;
 use constant DB_NAME  => "bliss.db";
 use constant STOP_MIXER => 60 * 60;
+use constant MAX_MIXER_START_CHECKS => 10;
 
 my $log = Slim::Utils::Log->addLogCategory({
     'category'     => 'plugin.blissmixer',
@@ -115,7 +116,7 @@ sub _resetMixerTimeout {
     Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + STOP_MIXER, \&_stopMixer);
 }
 
-sub _stopMixer() {
+sub _stopMixer {
     Slim::Utils::Timers::killTimers(undef, \&_stopMixer);
     if ($mixer && $mixer->alive) {
         $mixer->die;
@@ -124,19 +125,23 @@ sub _stopMixer() {
     }
 }
 
-sub _startMixer() {
+sub _startMixer {
+    my $allow_uploads = shift;
+
     if ($mixer && $mixer->alive) {
         main::DEBUGLOG && $log->debug("$binary already running");
     }
     if (!$binary) {
         $log->warn("No mixer binary");
-        return;
+        return 0;
     }
 
     my $db = Slim::Utils::Prefs::dir() . "/" . DB_NAME;
-    if (! -e $db) {
-        $log->warn("No database ($db)");
-        return;
+    if ($allow_uploads == 0) {
+        if (! -e $db) {
+            $log->warn("No database ($db)");
+            return 0;
+        }
     }
     $prefs->set('port', 0);
     my @params;
@@ -144,6 +149,12 @@ sub _startMixer() {
     push @params, "127.0.0.1";
     push @params, "--db";
     push @params, $db;
+    if ($allow_uploads == 1) {
+        push @params, "--upload";
+    } else {
+        push @params, "--address";
+        push @params, "127.0.0.1";
+    }
     eval { $mixer = Proc::Background->new({ 'die_upon_destroy' => 1 }, $binary, @params); };
     if ($@) {
         $log->warn($@);
@@ -156,6 +167,7 @@ sub _startMixer() {
             }
         });
     }
+    return 1;
 }
 
 sub _cliCommand {
@@ -169,7 +181,7 @@ sub _cliCommand {
 
     my $cmd = $request->getParam('_cmd');
 
-    if ($request->paramUndefinedOrNotOneOf($cmd, ['port']) ) {
+    if ($request->paramUndefinedOrNotOneOf($cmd, ['port', 'start-upload', 'stop']) ) {
         $request->setStatusBadParams();
         return;
     }
@@ -184,6 +196,38 @@ sub _cliCommand {
         $prefs->set('port', $number);
         $request->setStatusDone();
         return;
+    }
+
+    if ($cmd eq 'start-upload') {
+        _stopMixer();
+        _startMixer(1);
+        $request->setStatusProcessing();
+        _confirmMixerStarted($request, 0);
+        return;
+    }
+
+    if ($cmd eq 'stop') {
+        _stopMixer();
+        $request->setStatusDone();
+        return;
+    }
+}
+
+sub _confirmMixerStarted {
+    my $request = shift;
+    my $attempts = 0;
+    if ($mixer && $mixer->alive && $prefs->get('port')>0) {
+        $request->addResult("port", int($prefs->get('port')));
+        $request->setStatusDone();
+    }
+
+    if ($attempts < 5) {
+        Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
+            _confirmMixerStarted($request, $attempts);
+        });
+    } else {
+        $request->addResult("port", 0);
+        $request->setStatusDone();
     }
 }
 
@@ -228,31 +272,41 @@ sub _getMixableProperties {
 	return;
 }
 
+sub _mixerNotAvailable {
+    my ($client, $cb) = @_;
+    my $numSpot = 0;
+    my $seedTracks = _getMixableProperties($client, NUM_SEED_TRACKS); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client,
+    if ($seedTracks && ref $seedTracks && scalar @$seedTracks) {
+        foreach my $seedTrack (@$seedTracks) {
+            my ($trackObj) = Slim::Schema->find('Track', $seedTrack);
+            if ($trackObj) {
+                if ( $trackObj->path =~ m/^spotify:/ ) {
+                    $numSpot++;
+                }
+            }
+        }
+    }
+    _mixFailed($client, $cb, $numSpot);
+}
+
 sub _dstmMix {
     my ($client, $cb, $filterGenres, $callCount) = @_;
 
     # If mixer is not running, or not yet informed us of its port, then start mixer
     if (!$mixer || !$mixer->alive || $prefs->get('port')<1) {
-        if ($binary && $callCount < 10) {
+        if ($binary && $callCount < MAX_MIXER_START_CHECKS) {
             $callCount++;
-            _startMixer();
-            Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
-                _dstmMix($client, $cb, $filterGenres, $callCount);
-            });
-        } else {
-            my $numSpot = 0;
-            my $seedTracks = _getMixableProperties($client, NUM_SEED_TRACKS); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client,
-            if ($seedTracks && ref $seedTracks && scalar @$seedTracks) {
-                foreach my $seedTrack (@$seedTracks) {
-                    my ($trackObj) = Slim::Schema->find('Track', $seedTrack);
-                    if ($trackObj) {
-                        if ( $trackObj->path =~ m/^spotify:/ ) {
-                            $numSpot++;
-                        }
-                    }
-                }
+            my $ok = _startMixer(0);
+            if ($ok == 1) {
+                Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
+                    _dstmMix($client, $cb, $filterGenres, $callCount);
+                });
+            } else {
+                # _startMixer returns 0 if no mixer binary or no db, in which case no use checking again
+                _mixerNotAvailable($client, $cb);
             }
-            _mixFailed($client, $cb, $numSpot);
+        } else {
+            _mixerNotAvailable($client, $cb);
         }
         return;
     }
