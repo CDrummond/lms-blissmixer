@@ -313,7 +313,7 @@ sub _dstmMix {
 
     _resetMixerTimeout();
 
-    main::DEBUGLOG && $log->debug("Get similar tracks");
+    main::DEBUGLOG && $log->debug("Get tracks");
     my $seedTracks = _getMixableProperties($client, NUM_SEED_TRACKS); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, NUM_SEED_TRACKS);
 
     # don't seed from radio stations - only do if we're playing from some track based source
@@ -345,7 +345,7 @@ sub _dstmMix {
             my $dstm_tracks = $prefs->get('dstm_tracks') || DEF_NUM_DSTM_TRACKS;
             my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $dstm_tracks, 1, $filterGenres);
             my $port = $prefs->get('port') || 12000;
-            my $url = "http://localhost:$port/api/similar";
+            my $url = "http://localhost:$port/api/mix";
             main::DEBUGLOG && $log->debug("URL: ${url}");
             Slim::Networking::SimpleAsyncHTTP->new(
                 sub {
