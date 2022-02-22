@@ -152,7 +152,7 @@ version=sys.argv[1]
 if version!="test":
     checkVersion(version)
     checkVersionExists(version)
-updateInstallXml(version)
+    updateInstallXml(version)
 
 zipFile = createZip(version)
 sha1 = getSha1Sum(zipFile)
