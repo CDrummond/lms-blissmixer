@@ -172,6 +172,7 @@ sub _startMixer {
         push @params, "--address";
         push @params, "127.0.0.1";
     }
+    main::DEBUGLOG && $log->debug("Start mixer with params: @params");
     eval { $mixer = Proc::Background->new({ 'die_upon_destroy' => 1 }, $binary, @params); };
     if ($@) {
         $log->warn($@);
@@ -216,6 +217,7 @@ sub _cliCommand {
     }
 
     if ($cmd eq 'start-upload') {
+        main::DEBUGLOG && $log->debug("Requested to allow uploads");
         _stopMixer();
         _startMixer(1);
         $request->setStatusProcessing();
@@ -224,6 +226,7 @@ sub _cliCommand {
     }
 
     if ($cmd eq 'stop') {
+        main::DEBUGLOG && $log->debug("Requested to stop");
         _stopMixer();
         $request->setStatusDone();
         return;
@@ -389,6 +392,7 @@ sub _callApi {
                 Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
                     _callApi($request, $jsonData, $maxTracks, $seedToAdd, $callCount);
                 });
+                return;
             }
         }
         main::DEBUGLOG && $log->debug("Failed to start mixer");
