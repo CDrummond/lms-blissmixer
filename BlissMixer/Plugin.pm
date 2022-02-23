@@ -799,7 +799,7 @@ sub _getMixData {
     my $mediaDirs = $serverprefs->get('mediadirs');
     my $jsonData = to_json({
                         count       => int($trackCount),
-                        filtergenre => $filterGenres,
+                        filtergenre => int($filterGenres),
                         filterxmas  => int($prefs->get('filter_xmas') || 1),
                         min         => int($prefs->get('min_duration') || 0),
                         max         => int($prefs->get('max_duration') || 0),
