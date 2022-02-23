@@ -602,7 +602,7 @@ sub _objectInfoHandler {
                 },
             }
         },
-        name      => cstring($client, 'BLISSMIXER_MIX'),
+        name      => cstring($client, 'BLISSMIXER_CREATE_MIX'),
         favorites => 0,
 
         player => {
