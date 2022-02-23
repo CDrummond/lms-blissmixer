@@ -36,7 +36,8 @@ use constant DEF_NUM_DSTM_TRACKS => 5;
 use constant NUM_SEED_TRACKS => 5;
 use constant MAX_PREVIOUS_TRACKS => 200;
 use constant DEF_MAX_PREVIOUS_TRACKS => 100;
-use constant NUM_MIX_TRACKS => 50;
+use constant NUM_MIX_TRACKS_FEW => 20; # Number of tracks in a mix if few seeds
+use constant NUM_MIX_TRACKS => 50;     # Number of tracks in a mix
 use constant DB_NAME  => "bliss.db";
 use constant STOP_MIXER => 60 * 60;
 use constant MAX_MIXER_START_CHECKS => 10;
@@ -291,10 +292,11 @@ sub _cliCommand {
     main::DEBUGLOG && $log->debug("Num tracks for BlissMix: " . scalar(@seedsToUse));
 
     if (scalar @seedsToUse > 0) {
-        my $jsonData = _getMixData(\@seedsToUse, undef, NUM_MIX_TRACKS * 2, 1, $prefs->get('filter_genres') || 0);
+        my $numTracks = (scalar @seedsToUse) > 2 ? NUM_MIX_TRACKS : NUM_MIX_TRACKS_FEW;
+        my $jsonData = _getMixData(\@seedsToUse, undef, $numTracks, 1, $prefs->get('filter_genres') || 0);
 
         Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
-        if (0==_callApi($request, $jsonData, NUM_MIX_TRACKS, @seedsToUse[0], 0)) {
+        if (0==_callApi($request, $jsonData, $numTracks, @seedsToUse[0], 0)) {
             $request->setStatusProcessing();
         }
         return;
