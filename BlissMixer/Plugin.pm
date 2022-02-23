@@ -294,7 +294,9 @@ sub _cliCommand {
         my $jsonData = _getMixData(\@seedsToUse, undef, NUM_MIX_TRACKS * 2, 1, $prefs->get('filter_genres') || 0);
 
         Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
-        _callApi($request, $jsonData, NUM_MIX_TRACKS, @seedsToUse[0], 0);
+        if (0==_callApi($request, $jsonData, NUM_MIX_TRACKS, @seedsToUse[0], 0)) {
+            $request->setStatusProcessing();
+        }
         return;
     }
     $request->setStatusBadDispatch();
@@ -392,12 +394,12 @@ sub _callApi {
                 Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
                     _callApi($request, $jsonData, $maxTracks, $seedToAdd, $callCount);
                 });
-                return;
+                return 0;
             }
         }
         main::DEBUGLOG && $log->debug("Failed to start mixer");
         $request->setStatusDone();
-        return;
+        return 1;
     }
 
     _resetMixerTimeout();
@@ -508,8 +510,8 @@ sub _callApi {
                 $request->addResult('offset', 0);
 
                 my $thisWindow = {
-		                'windowStyle' => 'icon_list',
-		                'text'       => $request->string('BLISSMIXER_MIX'),
+	                'windowStyle' => 'icon_list',
+	                'text'       => $request->string('BLISSMIXER_MIX'),
                 };
                 $request->addResult('window', $thisWindow);
 
@@ -554,6 +556,7 @@ sub _callApi {
             $request->setStatusDone();
         }
     )->post($url, 'Timeout' => 30, 'Content-Type' => 'application/json;charset=utf-8', $jsonData);
+    return 1;
 }
 
 sub trackInfoHandler {
