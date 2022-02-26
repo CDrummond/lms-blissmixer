@@ -73,7 +73,7 @@ BLISSMIXER_GENRE_NOTE
 	EN	Mixes are based upon the tonal attributes of tracks. However, you may also elect to restrict mixes to groups of related genres (e.g. 'Hard Rock' and 'Rock'). If you then enable filtering by genre, this will allow tracks with different genres but within the same group to be mixed.
 
 BLISSMIXER_MIX
-	EN	Bliss Mix
+	EN	Bliss
 
 BLISSMIXER_CREATE_MIX
 	EN	Create bliss mix
