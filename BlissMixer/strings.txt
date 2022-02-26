@@ -22,13 +22,13 @@ BLISSMIXER_MIN_DURATION
 	EN	Minimum duration
 
 BLISSMIXER_MIN_DURATION_DESC
-	EN	Restrict to songs with a duration (in seconds) longer than this. Set to 0 for no minimum.
+	EN	Restrict to songs with a duration (in seconds) longer than, or equal to, this. Set to 0 for no minimum.
 
 BLISSMIXER_MAX_DURATION
 	EN	Maximum duration
 
 BLISSMIXER_MAX_DURATION_DESC
-	EN	Restrict to songs with a duration (in seconds) less than this. Set to 0 for no maximum.
+	EN	Restrict to songs with a duration (in seconds) less than, or equal to, this. Set to 0 for no maximum.
 
 BLISSMIXER_DSTM
 	EN	Bliss
