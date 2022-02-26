@@ -118,11 +118,11 @@ sub postinitPlugin {
     # if user has the Don't Stop The Music plugin enabled, register ourselves
     if ( Slim::Utils::PluginManager->isEnabled('Slim::Plugin::DontStopTheMusic::Plugin') ) {
         require Slim::Plugin::DontStopTheMusic::Plugin;
-        Slim::Plugin::DontStopTheMusic::Plugin->registerHandler('BLISSMIXER_MIX', sub {
+        Slim::Plugin::DontStopTheMusic::Plugin->registerHandler('BLISSMIXER_DSTM', sub {
             my ($client, $cb) = @_;
-            _dstmMix($client, $cb, 1, 0);
+            _dstmMix($client, $cb, $prefs->get('filter_genres') || 0, 0);
         });
-        #Slim::Plugin::DontStopTheMusic::Plugin->registerHandler('BLISSMIXER_IGNORE_GENRE_MIX', sub {
+        #Slim::Plugin::DontStopTheMusic::Plugin->registerHandler('BLISSMIXER_DSTM_IGNORE_GENRES', sub {
         #    my ($client, $cb) = @_;
         #    _dstmMix($client, $cb, 0, 0);
         #});

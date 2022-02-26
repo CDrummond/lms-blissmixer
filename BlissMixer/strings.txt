@@ -10,7 +10,7 @@ BLISSMIXER_FILTER_GENRES
 	EN	Restrict genres
 
 BLISSMIXER_FILTER_GENRES_DESC
-	EN	Restrict mix to genres similar to that of the seed. Requires configuring genre groups (below). (Default: Yes)
+	EN	Restrict mix to genres similar to that of the seed. Requires configuring genre groups (below). (Default: No)
 
 BLISSMIXER_FILTER_XMAS
 	EN	Exclude 'Christmas' genre
@@ -30,11 +30,8 @@ BLISSMIXER_MAX_DURATION
 BLISSMIXER_MAX_DURATION_DESC
 	EN	Restrict to songs with a duration (in seconds) less than this. Set to 0 for no maximum.
 
-BLISSMIXER_MIX
+BLISSMIXER_DSTM
 	EN	Bliss
-
-BLISSMIXER_IGNORE_GENRE_MIX
-	EN	Bliss (Ignore Genre)
 
 DEBUG_PLUGIN_BLISSMIXER
 	EN	Bliss Mixer
