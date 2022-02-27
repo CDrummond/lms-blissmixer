@@ -89,3 +89,9 @@ BLISSMIXER_PLAYTHISMIX
 	PL	Odtwórz tę składankę
 	RU	Воспроизвести этот микс
 	SV	Spela upp den här mixen
+
+BLISSMIXER_SIMILAR_TRACKS
+	EN	Similar tracks
+
+BLISSMIXER_SIMILAR_TRACKS_BY_ARTIST
+	EN	Similar tracks by artist

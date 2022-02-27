@@ -38,6 +38,7 @@ use constant MAX_PREVIOUS_TRACKS => 200;
 use constant DEF_MAX_PREVIOUS_TRACKS => 100;
 use constant NUM_MIX_TRACKS_FEW => 20; # Number of tracks in a mix if few seeds
 use constant NUM_MIX_TRACKS => 50;     # Number of tracks in a mix
+use constant NUM_LIST_TRACKS => 50;    # Number of tracks in a similarity list
 use constant DB_NAME  => "bliss.db";
 use constant STOP_MIXER => 60 * 60;
 use constant MAX_MIXER_START_CHECKS => 10;
@@ -93,6 +94,16 @@ sub initPlugin {
     Slim::Menu::TrackInfo->registerInfoProvider( blissmix => (
         above    => 'favorites',
         func     => \&trackInfoHandler,
+    ) );
+
+    Slim::Menu::TrackInfo->registerInfoProvider( blisssimilarity => (
+        above    => 'favorites',
+        func     => \&similarTracksHandler,
+    ) );
+
+    Slim::Menu::TrackInfo->registerInfoProvider( blisssimilaritybyartist => (
+        above    => 'favorites',
+        func     => \&similarTracksByArtistHandler,
     ) );
 
     Slim::Menu::AlbumInfo->registerInfoProvider( blissmix => (
@@ -200,7 +211,7 @@ sub _cliCommand {
 
     my $cmd = $request->getParam('_cmd');
 
-    if ($request->paramUndefinedOrNotOneOf($cmd, ['port', 'start-upload', 'stop', 'mix']) ) {
+    if ($request->paramUndefinedOrNotOneOf($cmd, ['port', 'start-upload', 'stop', 'mix', 'list']) ) {
         $request->setStatusBadParams();
         return;
     }
@@ -292,12 +303,19 @@ sub _cliCommand {
     main::DEBUGLOG && $log->debug("Num tracks for BlissMix: " . scalar(@seedsToUse));
 
     if (scalar @seedsToUse > 0) {
-        my $numTracks = (scalar @seedsToUse) > 2 ? NUM_MIX_TRACKS : NUM_MIX_TRACKS_FEW;
-        my $jsonData = _getMixData(\@seedsToUse, undef, $numTracks, 1, $prefs->get('filter_genres') || 0);
+        if ($cmd eq 'mix') {
+            my $numTracks = (scalar @seedsToUse) > 2 ? NUM_MIX_TRACKS : NUM_MIX_TRACKS_FEW;
+            my $jsonData = _getMixData(\@seedsToUse, undef, $numTracks, 1, $prefs->get('filter_genres') || 0);
 
-        Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
-        if (0==_callApi($request, $jsonData, $numTracks, @seedsToUse[0], 0)) {
-            $request->setStatusProcessing();
+            Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
+            if (0==_callApi($request, $jsonData, $numTracks, @seedsToUse[0], "mix", 0)) {
+                $request->setStatusProcessing();
+            }
+        } else { # list
+            my $jsonData = _getListData(@seedsToUse[0], NUM_LIST_TRACKS, $prefs->get('filter_genres') || 0, $request->getParam('byArtist') || 0);
+            if (0==_callApi($request, $jsonData, NUM_LIST_TRACKS, undef, "list", 0)) {
+                $request->setStatusProcessing();
+            }
         }
         return;
     }
@@ -385,6 +403,7 @@ sub _callApi {
     my $jsonData = shift;
     my $maxTracks = shift;
     my $seedToAdd = shift;
+    my $api = shift;
     my $callCount = shift;
 
     # If mixer is not running, or not yet informed us of its port, then start mixer
@@ -394,7 +413,7 @@ sub _callApi {
             my $ok = _startMixer(0);
             if ($ok == 1) {
                 Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
-                    _callApi($request, $jsonData, $maxTracks, $seedToAdd, $callCount);
+                    _callApi($request, $jsonData, $maxTracks, $seedToAdd, $api, $callCount);
                 });
                 return 0;
             }
@@ -407,7 +426,7 @@ sub _callApi {
     _resetMixerTimeout();
 
     my $port = $prefs->get('port') || 12000;
-    my $url = "http://localhost:$port/api/mix";
+    my $url = "http://localhost:$port/api/$api";
     my $http = LWP::UserAgent->new;
 
     $http->timeout($prefs->get('timeout') || 30);
@@ -432,8 +451,10 @@ sub _callApi {
             my @ids          = ();
 
             # TODO: Add more?
-            push @usableTracks, $seedToAdd;
-            push @ids, $seedToAdd->id;
+            if ($seedToAdd) {
+                push @usableTracks, $seedToAdd;
+                push @ids, $seedToAdd->id;
+            }
 
             foreach my $track (@songs) {
                 # Bug 4281 - need to convert from UTF-8 on Windows.
@@ -450,7 +471,7 @@ sub _callApi {
                                                                 : Slim::Utils::Misc::fileURLFromPath($isFileUrl
                                                                                             ? Slim::Utils::Misc::pathFromFileURL($track)
                                                                                             : $track));
-                    if (blessed $trackObj && ($trackObj->id != $seedToAdd->id)) {
+                    if (blessed $trackObj && (!$seedToAdd || ($trackObj->id != $seedToAdd->id))) {
                         push @usableTracks, $trackObj;
                         main::DEBUGLOG && $log->debug("..." . $track);
                         push @ids, $trackObj->id;
@@ -617,6 +638,51 @@ sub _objectInfoHandler {
             },
         }
     };
+}
+
+sub _trackSimilarityHandler {
+    my ( $byArtist, $client, $url, $obj, $remoteMeta, $tags ) = @_;
+    $tags ||= {};
+
+    my $special;
+    $special->{'actionParam'} = 'track_id';
+    $special->{'modeParam'}   = 'track';
+    $special->{'urlKey'}      = 'song';
+
+    return {
+        type      => 'redirect',
+        jive      => {
+            actions => {
+                go => {
+                    player => 0,
+                    cmd    => [ 'blissmixer', 'list' ],
+                    params => {
+                        menu     => 1,
+                        useContextMenu => 1,
+                        $special->{actionParam} => $obj->id,
+                        byArtist => $byArtist
+                    },
+                },
+            }
+        },
+        name      => cstring($client, $byArtist == 1 ? 'BLISSMIXER_SIMILAR_TRACKS_BY_ARTIST' : 'BLISSMIXER_SIMILAR_TRACKS'),
+        favorites => 0,
+
+        player => {
+            mode => 'blissmixer_list',
+            modeParams => {
+                $special->{actionParam} => $obj->id,
+            },
+        }
+    };
+}
+
+sub similarTracksHandler {
+    return _trackSimilarityHandler( 0, @_ );
+}
+
+sub similarTracksByArtistHandler {
+    return _trackSimilarityHandler( 1, @_ );
 }
 
 sub _dstmMix {
@@ -815,6 +881,28 @@ sub _getMixData {
                         norepalb    => int($prefs->get('no_repeat_album')),
                         genregroups => _genreGroups(),
                         mpath       => @$mediaDirs[0]
+                    });
+
+    main::DEBUGLOG && $log->debug("Request $jsonData");
+    return $jsonData;
+}
+
+sub _getListData {
+    my $seedTrack = shift;
+    my $trackCount = shift;
+    my $filterGenres = shift;
+    my $byArtist = shift;
+
+    my $mediaDirs = $serverprefs->get('mediadirs');
+    my $jsonData = to_json({
+                        count       => int($trackCount),
+                        filtergenre => int($filterGenres),
+                        min         => int($prefs->get('min_duration') || 0),
+                        max         => int($prefs->get('max_duration') || 0),
+                        track       => $seedTrack->url,
+                        genregroups => _genreGroups(),
+                        mpath       => @$mediaDirs[0],
+                        byartist    => int($byArtist)
                     });
 
     main::DEBUGLOG && $log->debug("Request $jsonData");
