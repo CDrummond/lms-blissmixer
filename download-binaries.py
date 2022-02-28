@@ -7,7 +7,7 @@
 # MIT license.
 #
 
-import datetime, os, requests, shutil, subprocess, tempfile, time
+import datetime, hashlib, os, requests, shutil, subprocess, tempfile, time
 
 PLUGIN_NAME = "BlissMixer"
 GITHUB_TOKEN_FILE = "%s/.config/github-token" % os.path.expanduser('~')
@@ -51,6 +51,19 @@ def get_urls(repo, artifacts):
     return resp
 
 
+def getMd5sum(path):
+    if not os.path.exists(path):
+        return '000'
+    md5 = hashlib.md5()
+    with open(path, 'rb') as f:
+        while True:
+            data = f.read(65535)
+            if not data:
+                break
+            md5.update(data)
+    return md5.hexdigest()
+
+
 def download_artifacts():
     urls = get_urls(GITHUB_REPO, GITHUB_ARTIFACTS)
     if len(urls)!=len(GITHUB_ARTIFACTS):
@@ -60,6 +73,7 @@ def download_artifacts():
         token = f.readlines()[0].strip()
     headers = {"Authorization": "token %s" % token};
     ok = True
+    updated = False
     with tempfile.TemporaryDirectory() as td:
         i = 0
         for url in urls:
@@ -76,15 +90,22 @@ def download_artifacts():
                 break
             subprocess.call(["unzip", dest, "-d", td], shell=False)
             i+=1
- 
+
         for a in ARTIFACT_MAP:
+            asrc = "%s/%s" % (td, a)
             adest = "%s/%s/Bin/%s" % (os.path.dirname(os.path.abspath(__file__)), PLUGIN_NAME, ARTIFACT_MAP[a])
-            info("Moving %s to %s" % (a, adest))
-            shutil.move("%s/%s" % (td, a), adest)
-            subprocess.call(["chmod", "a+x", adest], shell=False)
+            srcMd5 = getMd5sum(asrc)
+            destMd5 = getMd5sum(adest)
+            if srcMd5!=destMd5:
+                info("Moving %s to %s" % (a, adest))
+                shutil.move("%s/%s" % (td, a), adest)
+                subprocess.call(["chmod", "a+x", adest], shell=False)
+                updated = True
 
     if not ok:
         error("Failed to download artifacts")
+    elif not updated:
+        info("No changes")
 
 download_artifacts()
 
