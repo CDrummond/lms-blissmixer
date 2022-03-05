@@ -4,6 +4,7 @@
 2. Add 'Bin/windows' to LMS's bin search paths if running under windows.
    Likewise add 'Bin/mac' for mac.
 3. Rename 'Bin/darwin' to 'Bin/mac' as this is now added to the search path.
+4. Add vcruntime140.dll to 'Bin/windows'
 
 0.0.1
 -----
