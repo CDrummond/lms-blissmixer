@@ -16,6 +16,7 @@ use JSON::XS::VersionOneAndTwo;
 use File::Basename;
 use File::Slurp;
 use File::Spec;
+use File::Spec::Functions qw(catdir);
 use Proc::Background;
 
 use Slim::Player::ProtocolHandlers;
@@ -116,7 +117,12 @@ sub initPlugin {
         func     => \&artistInfoHandler,
     ) );
 
-
+    my $dir = dirname(__FILE__);
+    if (main::ISWINDOWS) {
+        Slim::Utils::Misc::addFindBinPaths(catdir($dir, 'Bin', 'windows'));
+    } elsif (main::ISMAC) {
+        Slim::Utils::Misc::addFindBinPaths(catdir($dir, 'Bin', 'mac'));
+    }
     $binary = Slim::Utils::Misc::findbin('bliss-mixer');
     main::INFOLOG && $log->info("Mixer: ${binary}");
     $initialized = 1;
