@@ -1,3 +1,7 @@
+0.0.2
+-----
+1. Ensure all prefs are prefixed prev_ in settings HTML file.
+
 0.0.1
 -----
 1. Initial release.

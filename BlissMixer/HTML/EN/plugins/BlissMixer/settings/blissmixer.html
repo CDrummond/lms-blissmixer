@@ -32,15 +32,15 @@
 
         [% WRAPPER settingGroup title="BLISSMIXER_FILTER_GENRES" desc="BLISSMIXER_FILTER_GENRES_DESC" %]
             <select class="stdedit" name="pref_filter_genres" id="filter_genres">
-                <option [% IF NOT prefs.filter_genres %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
-                <option [% IF prefs.filter_genres %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+                <option [% IF NOT prefs.pref_filter_genres %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+                <option [% IF prefs.pref_filter_genres %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
             </select>
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_FILTER_XMAS" desc="BLISSMIXER_FILTER_XMAS_DESC" %]
             <select class="stdedit" name="pref_filter_xmas" id="filter_xmas">
-                <option [% IF NOT prefs.filter_xmas %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
-                <option [% IF prefs.filter_xmas %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+                <option [% IF NOT prefs.pref_filter_xmas %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+                <option [% IF prefs.pref_filter_xmas %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
             </select>
         [% END %]
 
