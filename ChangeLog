@@ -3,6 +3,7 @@
 1. Ensure all prefs are prefixed prev_ in settings HTML file.
 2. Add 'Bin/windows' to LMS's bin search paths if running under windows.
    Likewise add 'Bin/mac' for mac.
+3. Rename 'Bin/darwin' to 'Bin/mac' as this is now added to the search path.
 
 0.0.1
 -----
