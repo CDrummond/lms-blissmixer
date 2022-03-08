@@ -53,8 +53,12 @@ my $log = Slim::Utils::Log->addLogCategory({
 my $prefs = preferences('plugin.blissmixer');
 my $serverprefs = preferences('server');
 my $initialized = 0;
+# Current bliss-mixer process
 my $mixer;
+# Path too bliss-mixer that will be used on current system
 my $binary;
+# store time when bliss-mixer was started. This is then checked in _startMixer
+# to ensure it is not attempted to be started again
 my $lastMixerStart = 0;
 
 
@@ -173,6 +177,8 @@ sub _startMixer {
         return 0;
     }
 
+    # Check to see if we attempted to start bliss-mixer less that 'MAX_MIXER_START_CHECKS+1'
+    # seconds ago. If so, then we are awaiting its start response so no need to try to start
     my $now = Time::HiRes::time();
     if ($lastMixerStart!=0 && ($now-$lastMixerStart)<(MAX_MIXER_START_CHECKS+1)) {
         return 1;
