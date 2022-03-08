@@ -217,6 +217,8 @@ sub _startMixer {
             }
         });
     }
+
+    # Store start time
     $lastMixerStart = $now;
     return 1;
 }
@@ -484,7 +486,7 @@ sub _callApi {
                     $track = Win32::GetANSIPathName($track);
                 }
 
-                my $isFileUrl = index($track, 'file:///')==0;
+                my $isFileUrl = index($track, 'file://')==0;
                 my $isCueUrl = $isFileUrl && index($track, '#')>0;
                 if ($isFileUrl || -e $track || -e Slim::Utils::Unicode::utf8encode_locale($track)) {
                     # Decode file:// URL and re-encode so that match LMS's encoding
@@ -779,7 +781,7 @@ sub _dstmMix {
                             $songs[$j] = Win32::GetANSIPathName($songs[$j]);
                         }
 
-                        if (index($songs[$j], 'file:///')==0) {
+                        if (index($songs[$j], 'file://')==0) {
                             if (index($songs[$j], '#')>0) { # Cue tracks
                                 push @$tracks, $songs[$j];
                             } else {
