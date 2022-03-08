@@ -5,6 +5,7 @@
    Likewise add 'Bin/mac' for mac.
 3. Rename 'Bin/darwin' to 'Bin/mac' as this is now added to the search path.
 4. Add vcruntime140.dll to 'Bin/windows'
+5. Don't repeatedly start mixer when API/DSTM invoked.
 
 0.0.1
 -----

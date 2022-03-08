@@ -55,6 +55,7 @@ my $serverprefs = preferences('server');
 my $initialized = 0;
 my $mixer;
 my $binary;
+my $lastMixerStart = 0;
 
 
 sub shutdownPlugin {
@@ -158,6 +159,7 @@ sub _stopMixer {
     } else {
         main::DEBUGLOG && $log->debug("$binary not running");
     }
+    $lastMixerStart = 0;
 }
 
 sub _startMixer {
@@ -171,6 +173,12 @@ sub _startMixer {
         return 0;
     }
 
+    my $now = Time::HiRes::time();
+    if ($lastMixerStart!=0 && ($now-$lastMixerStart)<(MAX_MIXER_START_CHECKS+1)) {
+        return 1;
+    }
+
+    $lastMixerStart = 0;
     my $db = $serverprefs->get('cachedir') . "/" . DB_NAME;
     if ($allow_uploads == 0) {
         if (! -e $db) {
@@ -203,6 +211,7 @@ sub _startMixer {
             }
         });
     }
+    $lastMixerStart = $now;
     return 1;
 }
 
@@ -426,6 +435,7 @@ sub _callApi {
         }
         main::DEBUGLOG && $log->debug("Failed to start mixer");
         $request->setStatusDone();
+        $lastMixerStart = 0;
         return 1;
     }
 
@@ -707,6 +717,7 @@ sub _dstmMix {
             }
         }
 
+        $lastMixerStart = 0;
         _mixerNotAvailable($client, $cb);
         return;
     }
