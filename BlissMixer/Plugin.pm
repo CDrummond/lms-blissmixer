@@ -438,12 +438,21 @@ sub _trackToPath {
 
     # Get track's path relative to mediaDir
     my $path = $track->path;
+    my $num = scalar(@$mediaDirs);
+    if (main::ISWINDOWS) {
+       $path =~ s#\\#/#g;
+    }
+
     foreach my $mediaDir (@$mediaDirs) {
+        my $mdLen = length($mediaDir);
+        if ($mdLen<1) {
+            next;
+        }
         if (main::ISWINDOWS) {
             $mediaDir =~ s#\\#/#g;
         }
         if (_startsWith($path, $mediaDir)) {
-            $path = substr($path, length($mediaDir));
+            $path = substr($path, $mdLen);
             $path = Slim::Utils::Unicode::utf8decode_locale($path);
             last;
         }
@@ -453,6 +462,7 @@ sub _trackToPath {
     if (_startsWith($path, "/")) {
         $path = substr($path, 1);
     }
+
     return $path;
 }
 
@@ -468,15 +478,23 @@ sub _pathToTrack {
     }
 
     foreach my $mediaDir (@$mediaDirs) {
+        my $mdLen = length($mediaDir);
+        if ($mdLen<1) {
+            next;
+        }
+        if (main::ISWINDOWS) {
+           $mediaDir =~ s#/#\\#g;
+        }
         my $md = substr($mediaDir, -1) eq $sep ? $mediaDir : "${mediaDir}${sep}";
         my $absPath = "${md}${path}";
 
         # Bug 4281 - need to convert from UTF-8 on Windows.
         if (main::ISWINDOWS && !-e track && -e Win32::GetANSIPathName($absPath)) {
-            $absPath= Win32::GetANSIPathName($absPath);
+            $absPath = Win32::GetANSIPathName($absPath);
         }
 
-        if (-e $absPath || -e Slim::Utils::Unicode::utf8encode_locale($absPath)) {
+        $absPath = Slim::Utils::Unicode::utf8encode_locale($absPath);
+        if (-e $absPath) {
             my $trackObj = Slim::Schema->objectForUrl(Slim::Utils::Misc::fileURLFromPath($absPath));
             if (blessed $trackObj) {
                 return $trackObj;
