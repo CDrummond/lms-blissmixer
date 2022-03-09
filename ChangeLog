@@ -8,6 +8,8 @@
 5. Don't repeatedly start mixer when API/DSTM invoked.
 6. Do path conversion (remove/add media dir) in plugin before/after calling
    mixer.
+7. Set 'mixerdebug: 1' in 'prefs/plugin/blissmixer.prefs' to enable bliss-mixer
+   debug.
 
 0.0.1
 -----

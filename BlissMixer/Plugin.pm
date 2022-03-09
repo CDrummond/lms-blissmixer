@@ -204,6 +204,10 @@ sub _startMixer {
         push @params, "--address";
         push @params, "127.0.0.1";
     }
+    if ($prefs->get('mixerdebug')) {
+        push @params, "--logging";
+        push @params, "debug";
+    }
     main::DEBUGLOG && $log->debug("Start mixer with params: @params");
     eval { $mixer = Proc::Background->new({ 'die_upon_destroy' => 1 }, $binary, @params); };
     if ($@) {
@@ -427,30 +431,20 @@ sub _startsWith {
     return rindex($str, $needle, 0)!=-1 ? 1 : 0;
 }
 
-sub _endsWith {
-    my $str = shift;
-    my $needle = shift;
-    my $slen = length($str);
-    my $nlen = length($needle);
-    if ($nlen>=$slen) {
-        return 0;
-    }
-    return rindex($str, $needle, $slen-$nlen)!=-1 ? 1 : 0;
-}
-
 # Convert a track object into a path relative to music folder
 sub _trackToPath {
     my $mediaDirs = shift;
     my $track = shift;
 
-    # Convert a track URL into its file path
-    my $path = Slim::Utils::Misc::pathFromFileURL($track->url);
+    # Get track's path relative to mediaDir
+    my $path = $track->path;
     foreach my $mediaDir (@$mediaDirs) {
         if (main::ISWINDOWS) {
             $mediaDir =~ s#\\#/#g;;
         }
         if (_startsWith($path, $mediaDir)) {
             $path = substr($path, length($mediaDir));
+            $path = Slim::Utils::Unicode::utf8decode_locale($path);
             last;
         }
     }
@@ -459,7 +453,6 @@ sub _trackToPath {
     if (_startsWith($path, "/")) {
         $path = substr($path, 1);
     }
-
     return $path;
 }
 
@@ -475,8 +468,8 @@ sub _pathToTrack {
     }
 
     foreach my $mediaDir (@$mediaDirs) {
-        my $md = _endsWith($mediaDir, $sep) ? $mediaDir : ($mediaDir + $sep);
-        my $absPath = $md + $path;
+        my $md = substr($mediaDir, -1) eq $sep ? $mediaDir : "${mediaDir}${sep}";
+        my $absPath = "${md}${path}";
 
         # Bug 4281 - need to convert from UTF-8 on Windows.
         if (main::ISWINDOWS && !-e track && -e Win32::GetANSIPathName($absPath)) {
