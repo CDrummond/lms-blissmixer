@@ -440,7 +440,7 @@ sub _trackToPath {
     my $path = $track->path;
     foreach my $mediaDir (@$mediaDirs) {
         if (main::ISWINDOWS) {
-            $mediaDir =~ s#\\#/#g;;
+            $mediaDir =~ s#\\#/#g;
         }
         if (_startsWith($path, $mediaDir)) {
             $path = substr($path, length($mediaDir));
