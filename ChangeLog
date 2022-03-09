@@ -6,6 +6,8 @@
 3. Rename 'Bin/darwin' to 'Bin/mac' as this is now added to the search path.
 4. Add vcruntime140.dll to 'Bin/windows'
 5. Don't repeatedly start mixer when API/DSTM invoked.
+6. Do path conversion (remove/add media dir) in plugin before/after calling
+   mixer.
 
 0.0.1
 -----

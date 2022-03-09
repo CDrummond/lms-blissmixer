@@ -364,44 +364,44 @@ sub _confirmMixerStarted {
 }
 
 sub _getMixableProperties {
-	my ($client, $count) = @_;
+    my ($client, $count) = @_;
 
-	return unless $client;
+    return unless $client;
 
-	$client = $client->master;
+    $client = $client->master;
 
-	my ($trackId, $artist, $title, $duration, $tracks);
+    my ($trackId, $artist, $title, $duration, $tracks);
 
     # Get last count*2 tracks from queue
     foreach (reverse @{ Slim::Player::Playlist::playList($client) } ) {
-		($artist, $title, $duration, $trackId) = Slim::Plugin::DontStopTheMusic::Plugin->getMixablePropertiesFromTrack($client, $_);
+        ($artist, $title, $duration, $trackId) = Slim::Plugin::DontStopTheMusic::Plugin->getMixablePropertiesFromTrack($client, $_);
 
-		next unless defined $artist && defined $title;
+        next unless defined $artist && defined $title;
 
-		push @$tracks, $trackId;
-		if ($count && scalar @$tracks > ($count * 2)) {
-		    last;
-		}
-	}
+        push @$tracks, $trackId;
+        if ($count && scalar @$tracks > ($count * 2)) {
+            last;
+        }
+    }
 
-	if ($tracks && ref $tracks && scalar @$tracks && $duration) {
-		main::INFOLOG && $log->info("Auto-mixing from random tracks in current playlist");
+    if ($tracks && ref $tracks && scalar @$tracks && $duration) {
+        main::INFOLOG && $log->info("Auto-mixing from random tracks in current playlist");
 
-		if ($count && scalar @$tracks > $count) {
-			Slim::Player::Playlist::fischer_yates_shuffle($tracks);
-			splice(@$tracks, $count);
-		}
+        if ($count && scalar @$tracks > $count) {
+            Slim::Player::Playlist::fischer_yates_shuffle($tracks);
+            splice(@$tracks, $count);
+        }
 
-		return $tracks;
-	} elsif (main::INFOLOG && $log->is_info) {
-		if (!$duration) {
-			main::INFOLOG && $log->info("Found radio station last in the queue - don't start a mix.");
-		} else {
-			main::INFOLOG && $log->info("No mixable items found in current playlist!");
-		}
-	}
+        return $tracks;
+    } elsif (main::INFOLOG && $log->is_info) {
+        if (!$duration) {
+            main::INFOLOG && $log->info("Found radio station last in the queue - don't start a mix.");
+        } else {
+            main::INFOLOG && $log->info("No mixable items found in current playlist!");
+        }
+    }
 
-	return;
+    return;
 }
 
 sub _mixerNotAvailable {
@@ -419,6 +419,77 @@ sub _mixerNotAvailable {
         }
     }
     _mixFailed($client, $cb, $numSpot);
+}
+
+sub _startsWith {
+    my $str = shift;
+    my $needle = shift;
+    return rindex($str, $needle, 0)!=-1 ? 1 : 0;
+}
+
+sub _endsWith {
+    my $str = shift;
+    my $needle = shift;
+    my $slen = length($str);
+    my $nlen = length($needle);
+    if ($nlen>=$slen) {
+        return 0;
+    }
+    return rindex($str, $needle, $slen-$nlen)!=-1 ? 1 : 0;
+}
+
+# Convert a track object into a path relative to music folder
+sub _trackToPath {
+    my $mediaDirs = shift;
+    my $track = shift;
+
+    # Convert a track URL into its file path
+    my $path = Slim::Utils::Misc::pathFromFileURL($track->url);
+    foreach my $mediaDir (@$mediaDirs) {
+        if (main::ISWINDOWS) {
+            $mediaDir =~ s#\\#/#g;;
+        }
+        if (_startsWith($path, $mediaDir)) {
+            $path = substr($path, length($mediaDir));
+            last;
+        }
+    }
+
+    # Remove any leading slash
+    if (_startsWith($path, "/")) {
+        $path = substr($path, 1);
+    }
+
+    return $path;
+}
+
+# Convert a path relative to music folder to a track object
+sub _pathToTrack {
+    my $mediaDirs = shift;
+    my $path = shift;
+    my $sep = "/";
+
+    if (main::ISWINDOWS) {
+        $path =~ s#/#\\#g;
+        $sep = "\\";
+    }
+
+    foreach my $mediaDir (@$mediaDirs) {
+        my $md = _endsWith($mediaDir, $sep) ? $mediaDir : ($mediaDir + $sep);
+        my $absPath = $md + $path;
+
+        # Bug 4281 - need to convert from UTF-8 on Windows.
+        if (main::ISWINDOWS && !-e track && -e Win32::GetANSIPathName($absPath)) {
+            $absPath= Win32::GetANSIPathName($absPath);
+        }
+
+        if (-e $absPath || -e Slim::Utils::Unicode::utf8encode_locale($absPath)) {
+            my $trackObj = Slim::Schema->objectForUrl(Slim::Utils::Misc::fileURLFromPath($absPath));
+            if (blessed $trackObj) {
+                return $trackObj;
+            }
+        }
+    }
 }
 
 sub _callApi {
@@ -473,6 +544,7 @@ sub _callApi {
             my $useContextMenu = $request->getParam('useContextMenu');
             my @usableTracks = ();
             my @ids          = ();
+            my $mediaDirs    = $serverprefs->get('mediadirs');
 
             # TODO: Add more?
             if ($seedToAdd) {
@@ -481,27 +553,13 @@ sub _callApi {
             }
 
             foreach my $track (@songs) {
-                # Bug 4281 - need to convert from UTF-8 on Windows.
-                if (main::ISWINDOWS && !-e track && -e Win32::GetANSIPathName($track)) {
-                    $track = Win32::GetANSIPathName($track);
-                }
-
-                my $isFileUrl = index($track, 'file://')==0;
-                my $isCueUrl = $isFileUrl && index($track, '#')>0;
-                if ($isFileUrl || -e $track || -e Slim::Utils::Unicode::utf8encode_locale($track)) {
-                    # Decode file:// URL and re-encode so that match LMS's encoding
-                    my $trackObj = Slim::Schema->objectForUrl($isCueUrl
-                                                                ? $track
-                                                                : Slim::Utils::Misc::fileURLFromPath($isFileUrl
-                                                                                            ? Slim::Utils::Misc::pathFromFileURL($track)
-                                                                                            : $track));
-                    if (blessed $trackObj && (!$seedToAdd || ($trackObj->id != $seedToAdd->id))) {
-                        push @usableTracks, $trackObj;
-                        main::DEBUGLOG && $log->debug("..." . $track);
-                        push @ids, $trackObj->id;
-                        if (scalar(@ids) >= $maxTracks) {
-                            last;
-                        }
+                my $trackObj = _pathToTrack($mediaDirs, $track);
+                if (blessed $trackObj && (!$seedToAdd || ($trackObj->id != $seedToAdd->id))) {
+                    push @usableTracks, $trackObj;
+                    main::DEBUGLOG && $log->debug("..." . $track);
+                    push @ids, $trackObj->id;
+                    if (scalar(@ids) >= $maxTracks) {
+                        last;
                     }
                 }
             }
@@ -509,56 +567,56 @@ sub _callApi {
             if ($menuMode) {
                 my $idList = join( ",", @ids );
                 my $base = {
-	                actions => {
-		                go => {
-			                cmd => ['trackinfo', 'items'],
-			                params => {
-				                menu => 'nowhere',
-				                useContextMenu => '1',
-			                },
-			                itemsParams => 'params',
-		                },
-		                play => {
-			                cmd => ['playlistcontrol'],
-			                params => {
-				                cmd  => 'load',
-				                menu => 'nowhere',
-			                },
-			                nextWindow => 'nowPlaying',
-			                itemsParams => 'params',
-		                },
-		                add =>  {
-			                cmd => ['playlistcontrol'],
-			                params => {
-				                cmd  => 'add',
-				                menu => 'nowhere',
-			                },
-			                itemsParams => 'params',
-		                },
-		                'add-hold' =>  {
-			                cmd => ['playlistcontrol'],
-			                params => {
-				                cmd  => 'insert',
-				                menu => 'nowhere',
-			                },
-			                itemsParams => 'params',
-		                },
-	                },
+                    actions => {
+                        go => {
+                            cmd => ['trackinfo', 'items'],
+                            params => {
+                                menu => 'nowhere',
+                                useContextMenu => '1',
+                            },
+                            itemsParams => 'params',
+                        },
+                        play => {
+                            cmd => ['playlistcontrol'],
+                            params => {
+                                cmd  => 'load',
+                                menu => 'nowhere',
+                            },
+                            nextWindow => 'nowPlaying',
+                            itemsParams => 'params',
+                        },
+                        add =>  {
+                            cmd => ['playlistcontrol'],
+                            params => {
+                                cmd  => 'add',
+                                menu => 'nowhere',
+                            },
+                            itemsParams => 'params',
+                        },
+                        'add-hold' =>  {
+                            cmd => ['playlistcontrol'],
+                            params => {
+                                cmd  => 'insert',
+                                menu => 'nowhere',
+                            },
+                            itemsParams => 'params',
+                        },
+                    },
                 };
 
                 if ($useContextMenu) {
-	                # "+ is more"
-	                $base->{'actions'}{'more'} = $base->{'actions'}{'go'};
-	                # "go is play"
-	                $base->{'actions'}{'go'} = $base->{'actions'}{'play'};
+                    # "+ is more"
+                    $base->{'actions'}{'more'} = $base->{'actions'}{'go'};
+                    # "go is play"
+                    $base->{'actions'}{'go'} = $base->{'actions'}{'play'};
                 }
                 $request->addResult('base', $base);
 
                 $request->addResult('offset', 0);
 
                 my $thisWindow = {
-	                'windowStyle' => 'icon_list',
-	                'text'       => $request->string('BLISSMIXER_MIX'),
+                    'windowStyle' => 'icon_list',
+                    'text'       => $request->string('BLISSMIXER_MIX'),
                 };
                 $request->addResult('window', $thisWindow);
 
@@ -567,18 +625,18 @@ sub _callApi {
                 $request->addResultLoop($loopname, $chunkCount, 'text', $request->string('BLISSMIXER_PLAYTHISMIX'));
                 $request->addResultLoop($loopname, $chunkCount, 'icon-id', '/html/images/playall.png');
                 my $actions = {
-	                'go' => {
-		                'cmd' => ['playlistcontrol', 'cmd:load', 'menu:nowhere', 'track_id:' . $idList],
-	                },
-	                'play' => {
-		                'cmd' => ['playlistcontrol', 'cmd:load', 'menu:nowhere', 'track_id:' . $idList],
-	                },
-	                'add' => {
-		                'cmd' => ['playlistcontrol', 'cmd:add', 'menu:nowhere', 'track_id:' . $idList],
-	                },
-	                'add-hold' => {
-		                'cmd' => ['playlistcontrol', 'cmd:insert', 'menu:nowhere', 'track_id:' . $idList],
-	                },
+                    'go' => {
+                        'cmd' => ['playlistcontrol', 'cmd:load', 'menu:nowhere', 'track_id:' . $idList],
+                    },
+                    'play' => {
+                        'cmd' => ['playlistcontrol', 'cmd:load', 'menu:nowhere', 'track_id:' . $idList],
+                    },
+                    'add' => {
+                        'cmd' => ['playlistcontrol', 'cmd:add', 'menu:nowhere', 'track_id:' . $idList],
+                    },
+                    'add-hold' => {
+                        'cmd' => ['playlistcontrol', 'cmd:insert', 'menu:nowhere', 'track_id:' . $idList],
+                    },
                 };
                 $request->addResultLoop($loopname, $chunkCount, 'actions', $actions);
                 $chunkCount++;
@@ -774,22 +832,12 @@ sub _dstmMix {
                     my @songs = split(/\n/, $response->content);
                     my $count = scalar @songs;
                     my $tracks = ();
+                    my $mediaDirs = $serverprefs->get('mediadirs');
 
                     for (my $j = 0; $j < $count; $j++) {
-                        # Bug 4281 - need to convert from UTF-8 on Windows.
-                        if (main::ISWINDOWS && !-e $songs[$j] && -e Win32::GetANSIPathName($songs[$j])) {
-                            $songs[$j] = Win32::GetANSIPathName($songs[$j]);
-                        }
-
-                        if (index($songs[$j], 'file://')==0) {
-                            if (index($songs[$j], '#')>0) { # Cue tracks
-                                push @$tracks, $songs[$j];
-                            } else {
-                                # Decode file:// URL and re-encode so that match LMS's encoding
-                                push @$tracks, Slim::Utils::Misc::fileURLFromPath(Slim::Utils::Misc::pathFromFileURL($songs[$j]));
-                            }
-                        } elsif ( -e $songs[$j] || -e Slim::Utils::Unicode::utf8encode_locale($songs[$j])) {
-                            push @$tracks, Slim::Utils::Misc::fileURLFromPath($songs[$j]);
+                        my $trackObj = _pathToTrack($mediaDirs, $songs[$j]);
+                        if (blessed $trackObj) {
+                            push @$tracks, $trackObj->url;
                         } else {
                             $log->error('API attempted to mix in a song at ' . $songs[$j] . ' that can\'t be found at that location');
                         }
@@ -881,18 +929,19 @@ sub _getMixData {
     my @mix = ();
     my @track_paths = ();
     my @previous_paths = ();
+    my $mediaDirs = $serverprefs->get('mediadirs');
 
     foreach my $track (@tracks) {
-        push @track_paths, $track->url;
+        push @track_paths, _trackToPath($mediaDirs, $track);
     }
 
     if ($previousTracks and scalar @previous > 0) {
         foreach my $track (@previous) {
-            push @previous_paths, $track->url;
+            push @previous_paths, _trackToPath($mediaDirs, $track);
         }
     }
 
-    my $mediaDirs = $serverprefs->get('mediadirs');
+
     my $jsonData = to_json({
                         count       => int($trackCount),
                         filtergenre => int($filterGenres),
@@ -904,8 +953,7 @@ sub _getMixData {
                         shuffle     => int($shuffle),
                         norepart    => int($prefs->get('no_repeat_artist')),
                         norepalb    => int($prefs->get('no_repeat_album')),
-                        genregroups => _genreGroups(),
-                        mpath       => @$mediaDirs[0]
+                        genregroups => _genreGroups()
                     });
 
     main::DEBUGLOG && $log->debug("Request $jsonData");
@@ -924,9 +972,8 @@ sub _getListData {
                         filtergenre => int($filterGenres),
                         min         => int($prefs->get('min_duration') || 0),
                         max         => int($prefs->get('max_duration') || 0),
-                        track       => $seedTrack->url,
+                        track       => _trackToPath($mediaDirs, $seedTrack),
                         genregroups => _genreGroups(),
-                        mpath       => @$mediaDirs[0],
                         byartist    => int($byArtist)
                     });
 
@@ -938,7 +985,7 @@ my $configuredGenreGroups = [];
 my $configuredGenreGroupsTs = 0;
 
 sub _genreGroups {
-    # Check to see if config has changed, saves try to read and process each time
+    # Check to see if config has changed, saves having to read and process each time
     my $ts = $prefs->get('_ts_genre_groups');
     if ($ts==$configuredGenreGroupsTs) {
         return $configuredGenreGroups;
