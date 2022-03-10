@@ -438,7 +438,6 @@ sub _trackToPath {
 
     # Get track's path relative to mediaDir
     my $path = $track->path;
-    my $num = scalar(@$mediaDirs);
     if (main::ISWINDOWS) {
        $path =~ s#\\#/#g;
     }
