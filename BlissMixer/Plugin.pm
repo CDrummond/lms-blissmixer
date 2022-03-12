@@ -43,6 +43,7 @@ use constant NUM_LIST_TRACKS => 50;    # Number of tracks in a similarity list
 use constant DB_NAME  => "bliss.db";
 use constant STOP_MIXER => 60 * 60;
 use constant MAX_MIXER_START_CHECKS => 10;
+use constant CUE_MARKER = ".CUE_TRACK.";
 
 my $log = Slim::Utils::Log->addLogCategory({
     'category'     => 'plugin.blissmixer',
@@ -442,6 +443,7 @@ sub _trackToPath {
        $path =~ s#\\#/#g;
     }
 
+    # TODO: Encode <file>#<start>-<stop> to <file>CUE_MARKER.<num>.mp3
     foreach my $mediaDir (@$mediaDirs) {
         my $mdLen = length($mediaDir);
         if ($mdLen<1) {
@@ -476,6 +478,7 @@ sub _pathToTrack {
         $sep = "\\";
     }
 
+    # TODO: Decode <file>CUE_MARKER.<num>.mp3 to <file>#<start>-<stop>
     foreach my $mediaDir (@$mediaDirs) {
         my $mdLen = length($mediaDir);
         if ($mdLen<1) {
