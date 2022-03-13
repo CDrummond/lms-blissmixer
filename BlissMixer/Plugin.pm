@@ -43,7 +43,6 @@ use constant NUM_LIST_TRACKS => 50;    # Number of tracks in a similarity list
 use constant DB_NAME  => "bliss.db";
 use constant STOP_MIXER => 60 * 60;
 use constant MAX_MIXER_START_CHECKS => 10;
-use constant CUE_MARKER = ".CUE_TRACK.";
 
 my $log = Slim::Utils::Log->addLogCategory({
     'category'     => 'plugin.blissmixer',
@@ -437,13 +436,19 @@ sub _trackToPath {
     my $mediaDirs = shift;
     my $track = shift;
 
+    # Is this a CUE track? If so encode <file>#<start>-<stop> as <file>.CUE_TRACK.<num>.mp3
+    my @parts = split(/#/, $track->url);
+    my $suffix = "";
+    if (2==scalar(@parts)) {
+        $suffix = ".CUE_TRACK." . $track->tracknum . ".mp3";
+    }
+
     # Get track's path relative to mediaDir
     my $path = $track->path;
     if (main::ISWINDOWS) {
        $path =~ s#\\#/#g;
     }
 
-    # TODO: Encode <file>#<start>-<stop> to <file>CUE_MARKER.<num>.mp3
     foreach my $mediaDir (@$mediaDirs) {
         my $mdLen = length($mediaDir);
         if ($mdLen<1) {
@@ -464,7 +469,7 @@ sub _trackToPath {
         $path = substr($path, 1);
     }
 
-    return $path;
+    return $path . $suffix;
 }
 
 # Convert a path relative to music folder to a track object
@@ -478,12 +483,20 @@ sub _pathToTrack {
         $sep = "\\";
     }
 
-    # TODO: Decode <file>CUE_MARKER.<num>.mp3 to <file>#<start>-<stop>
+    # Decode <file>.CUE_TRACK.<num>.mp3 to <file>#<start>-<stop>
+    my $cueTrackNum = 0;
+    my @parts = split(/\.CUE_TRACK\./, $path);
+    if (2==scalar(@parts)) {
+        $cueTrackNum = int(substr($parts[1], 0, -4)); # Remove .mp3 ext
+        $path = @parts[0];
+    }
+
     foreach my $mediaDir (@$mediaDirs) {
         my $mdLen = length($mediaDir);
         if ($mdLen<1) {
             next;
         }
+
         if (main::ISWINDOWS) {
            $mediaDir =~ s#/#\\#g;
         }
@@ -497,8 +510,24 @@ sub _pathToTrack {
 
         $absPath = Slim::Utils::Unicode::utf8encode_locale($absPath);
         if (-e $absPath) {
-            my $trackObj = Slim::Schema->objectForUrl(Slim::Utils::Misc::fileURLFromPath($absPath));
-            if (blessed $trackObj) {
+            my $url = Slim::Utils::Misc::fileURLFromPath($absPath);
+            my $trackObj = Slim::Schema->objectForUrl($url);
+
+            if ($cueTrackNum>0 && blessed $trackObj) {
+                # Found audio file containing cue tracks, now look for individual track...
+                my $dbh = Slim::Schema->dbh;
+                my $sql = $dbh->prepare("SELECT url FROM tracks WHERE url LIKE '$url#%' AND tracknum = $cueTrackNum LIMIT 1");
+                $sql->execute();
+                if ( my $result = $sql->fetchall_arrayref({}) ) {
+                    my $trackUrl = $result->[0]->{'url'} if ref $result && scalar @$result;
+                    if ($trackUrl) {
+                        $trackObj = Slim::Schema->objectForUrl($trackUrl);
+                        if (blessed $trackObj) {
+                            return $trackObj;
+                        }
+                    }
+                }
+            } else {
                 return $trackObj;
             }
         }
