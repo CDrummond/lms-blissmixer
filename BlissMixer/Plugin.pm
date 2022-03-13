@@ -511,24 +511,27 @@ sub _pathToTrack {
         $absPath = Slim::Utils::Unicode::utf8encode_locale($absPath);
         if (-e $absPath) {
             my $url = Slim::Utils::Misc::fileURLFromPath($absPath);
-            my $trackObj = Slim::Schema->objectForUrl($url);
 
-            if ($cueTrackNum>0 && blessed $trackObj) {
-                # Found audio file containing cue tracks, now look for individual track...
+            if ($cueTrackNum>0) {
+                # Get URL of specific track in CUE file
                 my $dbh = Slim::Schema->dbh;
                 my $sql = $dbh->prepare("SELECT url FROM tracks WHERE url LIKE '$url#%' AND tracknum = $cueTrackNum LIMIT 1");
                 $sql->execute();
                 if ( my $result = $sql->fetchall_arrayref({}) ) {
                     my $trackUrl = $result->[0]->{'url'} if ref $result && scalar @$result;
                     if ($trackUrl) {
-                        $trackObj = Slim::Schema->objectForUrl($trackUrl);
+                        # Got URL now get object
+                        my $trackObj = Slim::Schema->objectForUrl($trackUrl);
                         if (blessed $trackObj) {
                             return $trackObj;
                         }
                     }
                 }
             } else {
-                return $trackObj;
+                my $trackObj = Slim::Schema->objectForUrl($url);
+                if (blessed $trackObj) {
+                    return $trackObj;
+                }
             }
         }
     }
