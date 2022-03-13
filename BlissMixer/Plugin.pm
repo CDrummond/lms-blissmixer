@@ -436,11 +436,11 @@ sub _trackToPath {
     my $mediaDirs = shift;
     my $track = shift;
 
-    # Is this a CUE track? If so encode <file>#<start>-<stop> as <file>.CUE_TRACK.<num>.mp3
+    # Is this a CUE track? If so encode <file>#<start>-<stop> as <file>.CUE_TRACK.<num>
     my @parts = split(/#/, $track->url);
     my $suffix = "";
     if (2==scalar(@parts)) {
-        $suffix = ".CUE_TRACK." . $track->tracknum . ".mp3";
+        $suffix = ".CUE_TRACK." . $track->tracknum;
     }
 
     # Get track's path relative to mediaDir
@@ -483,11 +483,11 @@ sub _pathToTrack {
         $sep = "\\";
     }
 
-    # Decode <file>.CUE_TRACK.<num>.mp3 to <file>#<start>-<stop>
+    # Decode <file>.CUE_TRACK.<num> to <file>#<start>-<stop>
     my $cueTrackNum = 0;
     my @parts = split(/\.CUE_TRACK\./, $path);
     if (2==scalar(@parts)) {
-        $cueTrackNum = int(substr($parts[1], 0, -4)); # Remove .mp3 ext
+        $cueTrackNum = int($parts[1]);
         $path = @parts[0];
     }
 
