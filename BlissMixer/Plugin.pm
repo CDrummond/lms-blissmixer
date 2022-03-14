@@ -195,7 +195,7 @@ sub _startMixer {
     $prefs->set('port', 0);
     my @params;
     push @params, "--lms";
-    push @params, "127.0.0.1";
+    push @params, Slim::Utils::Network::serverAddr();
     push @params, "--db";
     push @params, $db;
     if ($allow_uploads == 1) {

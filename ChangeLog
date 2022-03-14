@@ -1,6 +1,7 @@
 0.1.0
 -----
 1. Add support for CUE tracks.
+2. Get LMS IP from 'Slim::Utils::Network::serverAddr()'
 
 0.0.2
 -----
