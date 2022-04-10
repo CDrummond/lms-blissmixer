@@ -14,11 +14,11 @@ GITHUB_TOKEN_FILE = "%s/.config/github-token" % os.path.expanduser('~')
 GITHUB_REPO = "CDrummond/bliss-mixer"
 GITHUB_ARTIFACTS = ["bliss-mixer-linux", "bliss-mixer-mac", "bliss-mixer.exe"]
 GITHUB_ARTIFACT_ZIPS = ["linux.zip", "mac.zip", "windows.zip"]
-ARTIFACT_MAP = { "armhf-linux/bliss-mixer":  "armhf-linux/bliss-mixer",
-                 "arm-linux/bliss-mixer":    "arm-linux/bliss-mixer",
-                 "x86_64-linux/bliss-mixer": "x86_64-linux/bliss-mixer",
-                 "bliss-mixer":              "mac/bliss-mixer",
-                 "bliss-mixer.exe":          "windows/bliss-mixer.exe"}
+ARTIFACT_MAP = { "armhf-linux/bliss-mixer":   "armhf-linux/bliss-mixer",
+                 "aarch64-linux/bliss-mixer": "aarch64-linux/bliss-mixer",
+                 "x86_64-linux/bliss-mixer":  "x86_64-linux/bliss-mixer",
+                 "bliss-mixer":               "mac/bliss-mixer",
+                 "bliss-mixer.exe":           "windows/bliss-mixer.exe"}
 
 def info(s):
     print("INFO: %s" %s)
