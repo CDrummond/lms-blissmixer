@@ -1,3 +1,8 @@
+0.2.0
+-----
+1. If LMS is password protected, then allow user to specify a specific port on
+   which to run the mixer.
+
 0.1.1
 -----
 1. Fix ARM-64 binary path.

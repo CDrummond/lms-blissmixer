@@ -22,6 +22,7 @@ my $log = Slim::Utils::Log->addLogCategory({
 });
 
 my $prefs = preferences('plugin.blissmixer');
+my $serverprefs = preferences('server');
 
 sub name {
 	return Slim::Web::HTTP::CSRF->protectName('BlissMixer');
@@ -32,8 +33,14 @@ sub page {
 }
 
 sub prefs {
-	return ($prefs, qw(host port filter_genres filter_xmas min_duration max_duration no_repeat_artist no_repeat_album no_repeat_track dstm_tracks genre_groups));
+	return ($prefs, qw(host mixer_port filter_genres filter_xmas min_duration max_duration no_repeat_artist no_repeat_album no_repeat_track dstm_tracks genre_groups));
 }
+
+sub beforeRender {
+    my ($class, $paramRef) = @_;
+    $paramRef->{allowPortConfig} = $serverprefs->get('authorize');
+}
+
 
 sub handler {
 	my ($class, $client, $params, $callback, @args) = @_;

@@ -95,3 +95,12 @@ BLISSMIXER_SIMILAR_TRACKS
 
 BLISSMIXER_SIMILAR_TRACKS_BY_ARTIST
 	EN	Similar tracks by artist
+
+BLISSMIXER_PORT
+	EN	Port
+
+BLISSMIXER_PORT_DESC
+	EN	Port number on which the mixer will run.
+
+BLISSMIXER_PORT_NOTE
+	EN	Your LMS is password protected, therefore the mixer binary (which creates the actual mixes) needs to be run on a specific port, which can be specified below.

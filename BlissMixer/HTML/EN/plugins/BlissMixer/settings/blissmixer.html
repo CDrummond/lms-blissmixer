@@ -48,6 +48,14 @@
             <textarea class="stdedit" name="pref_genre_groups" id="genre_groups" cols="80" rows="5">[% prefs.pref_genre_groups %]</textarea>
         [% END %]
 
+        [% IF allowPortConfig %]
+            <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+            <div>[% "BLISSMIXER_PORT_NOTE" | string %]</div><br/>
+            [% WRAPPER settingGroup title="BLISSMIXER_PORT" desc="BLISSMIXER_PORT_DESC" %]
+                <input type="text" class="stdedit" name="pref_mixer_port" id="mixer_port" value="[% prefs.pref_mixer_port %]" size="5">
+            [% END %]
+        [% END %]
+
     [% END %]
 
 [% PROCESS settings/footer.html %]

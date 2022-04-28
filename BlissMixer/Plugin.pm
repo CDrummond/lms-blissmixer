@@ -55,6 +55,8 @@ my $serverprefs = preferences('server');
 my $initialized = 0;
 # Current bliss-mixer process
 my $mixer;
+# Port number mixer is running on
+my $mixerPort = 0;
 # Path too bliss-mixer that will be used on current system
 my $binary;
 # store time when bliss-mixer was started. This is then checked in _startMixer
@@ -76,7 +78,7 @@ sub initPlugin {
         filter_genres    => 0,
         filter_xmas      => 1,
         host             => 'localhost',
-        port             => 12000,
+        mixer_port       => 12000,
         min_duration     => 0,
         max_duration     => 0,
         no_repeat_artist => 15,
@@ -166,8 +168,41 @@ sub _stopMixer {
     $lastMixerStart = 0;
 }
 
+#
+# If LMS is password protected then mixer cannot inform us of its port, so
+# we run it on a hard-coded port. However, we need to know (for mixes) when
+# it is actually ready, hence we poll /api/ready
+#
+sub _checkIfMixerReady {
+    my $attempts = shift;
+    my $port = $prefs->get('mixer_port');
+    my $url = "http://localhost:$port/api/ready";
+    my $http = LWP::UserAgent->new;
+
+    $http->timeout(1);
+
+    main::DEBUGLOG && $log->debug("Call $url");
+
+    Slim::Networking::SimpleAsyncHTTP->new(
+        sub {
+            main::DEBUGLOG && $log->debug("Mixer is ready");
+            $mixerPort = int($port);
+        },
+        sub {
+            if ($attempts < MAX_MIXER_START_CHECKS) {
+                Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
+                    _checkIfMixerReady($attempts + 1);
+                });
+            } else {
+                main::DEBUGLOG && $log->debug("Could not determin if mixef is ready, assume it is?");
+                $mixerPort = int($port);
+            }
+        }
+    )->get($url, 'Content-Type' => 'application/json;charset=utf-8');
+}
+
 sub _startMixer {
-    my $allow_uploads = shift;
+    my $allowUploads = shift;
 
     if ($mixer && $mixer->alive) {
         main::DEBUGLOG && $log->debug("$binary already running");
@@ -186,19 +221,28 @@ sub _startMixer {
 
     $lastMixerStart = 0;
     my $db = $serverprefs->get('cachedir') . "/" . DB_NAME;
-    if ($allow_uploads == 0) {
+    if ($allowUploads == 0) {
         if (! -e $db) {
             $log->warn("No database ($db)");
             return 0;
         }
     }
-    $prefs->set('port', 0);
+    $mixerPort = 0;
+    my $cfgPort = int($prefs->get('mixer_port') || 0);
+    if (!$serverprefs->get('authorize')) {
+        $cfgPort = 0;
+    }
     my @params;
-    push @params, "--lms";
-    push @params, Slim::Utils::Network::serverAddr();
+    if ($cfgPort>0) {
+        push @params, "--port";
+        push @params, $cfgPort;
+    } else {
+        push @params, "--lms";
+        push @params, Slim::Utils::Network::serverAddr();
+    }
     push @params, "--db";
     push @params, $db;
-    if ($allow_uploads == 1) {
+    if ($allowUploads == 1) {
         push @params, "--upload";
     } else {
         push @params, "--address";
@@ -216,6 +260,16 @@ sub _startMixer {
         Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
             if ($mixer && $mixer->alive) {
                 main::DEBUGLOG && $log->debug("$binary running");
+                # Mixer is running. If we have a hard-coded port then mixer will not inform us of its
+                # ready state by sending this port. Therefore if we are in upload mode, assume its ready,
+                # else poll its api/ready - as it might be reading db file...
+                if ($cfgPort>0) {
+                    if ($allowUploads) {
+                        $mixerPort = $cfgPort;
+                    } else {
+                        _checkIfMixerReady(0);
+                    }
+                }
             } else {
                 main::DEBUGLOG && $log->debug("$binary NOT running");
             }
@@ -250,7 +304,7 @@ sub _cliCommand {
             return;
         }
         main::DEBUGLOG && $log->debug("Mixer port: ${number}");
-        $prefs->set('port', $number);
+        $mixerPort = int($number);
         $request->setStatusDone();
         return;
     }
@@ -351,15 +405,16 @@ sub _cliCommand {
 
 sub _confirmMixerStarted {
     my $request = shift;
-    my $attempts = 0;
-    if ($mixer && $mixer->alive && $prefs->get('port')>0) {
-        $request->addResult("port", int($prefs->get('port')));
+    my $attempts = shift;
+    if ($mixer && $mixer->alive && $mixerPort>0) {
+        $request->addResult("port", $mixerPort);
         $request->setStatusDone();
+        return;
     }
 
     if ($attempts < 5) {
         Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
-            _confirmMixerStarted($request, $attempts);
+            _confirmMixerStarted($request, $attempts + 1);
         });
     } else {
         $request->addResult("port", 0);
@@ -546,7 +601,7 @@ sub _callApi {
     my $callCount = shift;
 
     # If mixer is not running, or not yet informed us of its port, then start mixer
-    if (!$mixer || !$mixer->alive || $prefs->get('port')<1) {
+    if (!$mixer || !$mixer->alive || $mixerPort<1) {
         if ($binary && $callCount < MAX_MIXER_START_CHECKS) {
             $callCount++;
             my $ok = _startMixer(0);
@@ -565,7 +620,7 @@ sub _callApi {
 
     _resetMixerTimeout();
 
-    my $port = $prefs->get('port') || 12000;
+    my $port = $mixerPort || 12000;
     my $url = "http://localhost:$port/api/$api";
     my $http = LWP::UserAgent->new;
 
@@ -816,7 +871,7 @@ sub _dstmMix {
     my ($client, $cb, $filterGenres, $callCount) = @_;
 
     # If mixer is not running, or not yet informed us of its port, then start mixer
-    if (!$mixer || !$mixer->alive || $prefs->get('port')<1) {
+    if (!$mixer || !$mixer->alive || $mixerPort<1) {
         if ($binary && $callCount < MAX_MIXER_START_CHECKS) {
             $callCount++;
             my $ok = _startMixer(0);
@@ -866,7 +921,7 @@ sub _dstmMix {
 
             my $dstm_tracks = $prefs->get('dstm_tracks') || DEF_NUM_DSTM_TRACKS;
             my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $dstm_tracks, 1, $filterGenres);
-            my $port = $prefs->get('port') || 12000;
+            my $port = $mixerPort || 12000;
             my $url = "http://localhost:$port/api/mix";
             main::DEBUGLOG && $log->debug("URL: ${url}");
             Slim::Networking::SimpleAsyncHTTP->new(
