@@ -170,7 +170,7 @@ sub _stopMixer {
 
 #
 # If LMS is password protected then mixer cannot inform us of its port, so
-# we run it on a hard-coded port. However, we need to know (for mixes) when
+# we run it on a user defined port. However, we need to know (for mixes) when
 # it is actually ready, hence we poll /api/ready
 #
 sub _checkIfMixerReady {
@@ -194,7 +194,7 @@ sub _checkIfMixerReady {
                     _checkIfMixerReady($attempts + 1);
                 });
             } else {
-                main::DEBUGLOG && $log->debug("Could not determin if mixef is ready, assume it is?");
+                main::DEBUGLOG && $log->debug("Could not determine if mixer is ready, assume it is?");
                 $mixerPort = int($port);
             }
         }
