@@ -2,78 +2,103 @@
 
 BLISSMIXER
 	EN	Bliss Mixer
+	DE	Bliss Mixer
 
 BLISSMIXER_DESC
 	EN	Bliss Mixer for Don't Stop the Music
+	DE	Bliss Mixer für Don't Stop the Music
 
 BLISSMIXER_FILTER_GENRES
 	EN	Restrict genres
+	DE	Stilrichtungen beschränken
 
 BLISSMIXER_FILTER_GENRES_DESC
 	EN	Restrict mix to genres similar to that of the seed. Requires configuring genre groups (below). (Default: No)
+	DE	Mix auf Stilrichtungen beschränken, die dem Seed ähnlich sind. Benötigt konfigurierte Strilrichtungs-Gruppen (unten). (Default: Nein)
 
 BLISSMIXER_FILTER_XMAS
 	EN	Exclude 'Christmas' genre
+	DE	Stilrichtung 'Christmas' ausschließen
 
 BLISSMIXER_FILTER_XMAS_DESC
 	EN	Exclude tracks tagged with 'Christmas' genre, unless in December (Default: Yes)
+	DE	Tracks mit der Stilrichtung 'Christmas' ausschließen, sofern nicht Dezember ist (Default: Ja)
 
 BLISSMIXER_MIN_DURATION
 	EN	Minimum duration
+	DE	Minimale Länge
 
 BLISSMIXER_MIN_DURATION_DESC
 	EN	Restrict to songs with a duration (in seconds) longer than, or equal to, this. Set to 0 for no minimum.
+	DE	Auf Tracks beschränken, deren minimale Dauer (in Sekunden) länger oder gleich dem Wert ist. (Wert von 0: kein Minimum)
 
 BLISSMIXER_MAX_DURATION
 	EN	Maximum duration
+	DE	Maximale Länge
 
 BLISSMIXER_MAX_DURATION_DESC
 	EN	Restrict to songs with a duration (in seconds) less than, or equal to, this. Set to 0 for no maximum.
+	DE	Auf Tracks beschränken, deren maximale Dauer (in Sekunden) kürzer oder gleich dem Wert ist. (Wert von 0: kein Maximum)
 
 BLISSMIXER_DSTM
 	EN	Bliss
+	DE	Bliss
 
 DEBUG_PLUGIN_BLISSMIXER
 	EN	Bliss Mixer
+	DE	Bliss Mixer
 
 BLISSMIXER_NO_REPEAT_ARTIST
 	EN	Don't repeat artist for x tracks
+	DE	Interpret die nächsten x Tracks nicht erneut auswählen
 
 BLISSMIXER_NO_REPEAT_ARTIST_DESC
 	EN	Attempt to not use the same artist for the specified number of tracks. Artist may still repeat if there are too few candidate tracks.
+	DE	Für die angegebene Anzahl an Tracks wird der Interpret möglichst nicht erneut ausgewählt. Der Interpret wird erneut ausgewählt, wenn zu wenig Tracks als Kandidaten zur Auswahl stehen.
 
 BLISSMIXER_NO_REPEAT_ALBUM
 	EN	Don't repeat album for x tracks
+	DE	Album für die nächsten x Tracks nicht erneut auswählen
 
 BLISSMIXER_NO_REPEAT_ALBUM_DESC
 	EN	Attempt to not use the tracks from an album for the specified number of tracks. Tracks from same album may still repeat if there are too few candidate tracks, or the album is a 'Various Artists' album.
+	DE	Für die angegebene Anzahl an Tracks wird das Album möglichst nicht erneut ausgewählt. Der Interpret wird erneut ausgewählt, wenn zu wenig Tracks als Kandidaten zur Auswahl stehen oder das Album eines mit 'Diverse Interpreten' ist.
 
 BLISSMIXER_NO_REPEAT_TRACK
 	EN	Don't repeat track for x tracks
+	DE	Track die nächsten x Tracks nicht erneut auswählen
 
 BLISSMIXER_NO_REPEAT_TRACK_DESC
 	EN	Prevent a track from being repeated within the specified limit.
+	DE	Einen Track innerhalb der gegebenen Anzahl an Tracks nicht wiederholen.
 
 BLISSMIXER_NUM_DSTM_TRACKS
 	EN	Number of mixer tracks
+	DE	Anzahl an Tracks im Mixer
 
 BLISSMIXER_NUM_DSTM_TRACKS_DESC
 	EN	Number of tracks to add to the play queue when run as a mixer for "Don't Stop the Music"
+	DE	Anzahl an Tracks, die der Play Queue hinzugefügt werden, wenn als Mixer für "Dont' Stop the Music" ausgewählt
 
 BLISSMIXER_GENRE_GROUPS
 	EN	Genre groups
+	DE	Stilrichtungs-Gruppen
 
 BLISSMIXER_GENRE_GROUPS_DESC
 	EN	Define a list of genre groups. When filtering by genre only similar tracks within a track's genre group will be used. (If a track is not in a group, then only similar tracks that are also not in a group will be used.) Groups are configured as a semi-colon separated list of genre names (e.g. Pop; Dance) with each new group on a new line (empty lines are ignored). To enable filtering by specific genre then create a group with just that genre.
+	DE	Erstelle eine Liste aus Stilrichtungs-Gruppen. Beim Filtern nach Stilrichtungs-Gruppen werden nur Tracks, deren Stilrichtung in der Stilrichtungs-Gruppe enthalten sind, ausgewählt. (Wenn ein Track nicht in einer Gruppe ist, werden nur ähnliche Tracks ausgewählt, die ebenfalls nicht in der Gruppe sind.) Gruppen werden als Semikolon spearierte Liste aus Stilrichtungen erstellt (z.B. Pop; Dance), wobei jede Gruppe in einer neuen Zeile steht (leere Zeilen werden ignoriert). Mit Gruppen, die aus einer einzigen Stilrichtung bestehen, kann nach dieser Stilrichtung gefiltert werden.
 
 BLISSMIXER_GENRE_NOTE
 	EN	Mixes are based upon the tonal attributes of tracks. However, you may also elect to restrict mixes to groups of related genres (e.g. 'Hard Rock' and 'Rock'). If you then enable filtering by genre, this will allow tracks with different genres but within the same group to be mixed.
+	DE	Mixe basieren auf tonalen Attributen eines Tracks. Dennoch können Mixe auf Gruppen bestimmter Stilrichtungen beschränkt werden (z.B. 'Hard Rock' und 'Rock'). Wenn der Filter nach Stilrichtung ausgewählt ist, werden Tracks der entsprechenden Stilrichtung in der Stilrichtungs-Gruppe für einen Mix ausgewählt.
 
 BLISSMIXER_MIX
 	EN	Bliss
+	DE	Bliss
 
 BLISSMIXER_CREATE_MIX
 	EN	Create bliss mix
+	DE	Bliss Mix erstellen
 
 BLISSMIXER_PLAYTHISMIX
 	CS	Přehrát tento mix
@@ -92,15 +117,20 @@ BLISSMIXER_PLAYTHISMIX
 
 BLISSMIXER_SIMILAR_TRACKS
 	EN	Similar tracks
+	DE	Ähnliche Tracks
 
 BLISSMIXER_SIMILAR_TRACKS_BY_ARTIST
 	EN	Similar tracks by artist
+	DE	Ähnliche Tracks nach Interpret
 
 BLISSMIXER_PORT
 	EN	Port
+	DE	Port
 
 BLISSMIXER_PORT_DESC
 	EN	Port number on which the mixer will run.
+	DE	Port Nummer des Mixers.
 
 BLISSMIXER_PORT_NOTE
 	EN	Your LMS is password protected, therefore the mixer binary (which creates the actual mixes) needs to be run on a specific port, which can be specified below.
+	DE	LMS ist posswortgeschützt. Aus diesem Grund muss die Mixer Binary (welche die Mixes erstellt) auf einem bestimmten Port laufen. Dieser kann hier gesetzt werden.
