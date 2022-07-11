@@ -85,7 +85,7 @@ BLISSMIXER_GENRE_GROUPS
 	DE	Stilrichtungs-Gruppen
 
 BLISSMIXER_GENRE_GROUPS_DESC
-	EN	Define a list of genre groups. When filtering by genre only similar tracks within a track's genre group will be used. (If a track is not in a group, then only similar tracks that are also not in a group will be used.) Groups are configured as a semi-colon separated list of genre names (e.g. Pop; Dance) with each new group on a new line (empty lines are ignored). To enable filtering by specific genre then create a group with just that genre.
+	EN	Define a list of genre groups. When filtering by genre only similar tracks within a track's genre group will be used. (If a track is not in a group, then only similar tracks that are also not in a group will be used.) Groups are configured as a semi-colon separated list of genre names (e.g. Pop; Dance) with each new group on a new line (empty lines are ignored). To enable filtering by specific genre then create a group with just that genre. Genre names may contain an asterisk to match againt similar names - e.g. '* Rock' woiuld match 'Hard Rock' and 'Classic Rock'
 	DE	Erstelle eine Liste aus Stilrichtungs-Gruppen. Beim Filtern nach Stilrichtungs-Gruppen werden nur Tracks, deren Stilrichtung in der Stilrichtungs-Gruppe enthalten sind, ausgewählt. (Wenn ein Track nicht in einer Gruppe ist, werden nur ähnliche Tracks ausgewählt, die ebenfalls nicht in der Gruppe sind.) Gruppen werden als Semikolon spearierte Liste aus Stilrichtungen erstellt (z.B. Pop; Dance), wobei jede Gruppe in einer neuen Zeile steht (leere Zeilen werden ignoriert). Mit Gruppen, die aus einer einzigen Stilrichtung bestehen, kann nach dieser Stilrichtung gefiltert werden.
 
 BLISSMIXER_GENRE_NOTE

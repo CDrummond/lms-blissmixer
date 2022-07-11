@@ -1,3 +1,7 @@
+0.3.0
+-----
+1. Allow genres in genre groups to use wildcard.
+
 0.2.1
 -----
 1. Re-add vcruntime140.dll to 'Bin/windows'
