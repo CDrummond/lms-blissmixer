@@ -134,3 +134,69 @@ BLISSMIXER_PORT_DESC
 BLISSMIXER_PORT_NOTE
 	EN	Your LMS is password protected, therefore the mixer binary (which creates the actual mixes) needs to be run on a specific port, which can be specified below.
 	DE	LMS ist posswortgeschützt. Aus diesem Grund muss die Mixer Binary (welche die Mixes erstellt) auf einem bestimmten Port laufen. Dieser kann hier gesetzt werden.
+
+BLISSMIXER_METRICS
+	EN	Metrics
+
+BLISSMIXER_METRICS_NOTE
+	EN	Tracks are located based upon how close their metrics are to other tracks. 20 such metrics are stored per track. You may use the values below to adjust how much weight is given to each metric. 'Tempo' has a single metric, 'Timbre' has 7 metrics, 'Loudness' has 2 metrics, and 'Chroma' has 10. For more information, please refer to <a href="https://lelele.io/bliss.html">https://lelele.io/bliss.html</a>
+
+BLISSMIXER_METRIC_TEMPO
+	EN	Tempo
+
+BLISSMIXER_METRIC_ZCR
+	EN	Timbre (Zero crossing)
+
+BLISSMIXER_METRIC_MEAN_SPEC_CENT
+	EN	Timbre (Mean of spectral centroid)
+
+BLISSMIXER_METRIC_STD_DEV_SPEC_CENT
+	EN	Timbre (Std. deviatation of spectral centroid)
+
+BLISSMIXER_METRIC_MEAN_SPEC_ROLL_OFF
+	EN	Timbre (Mean of spectral roll off)
+
+BLISSMIXER_METRIC_STD_DEV_SPEC_ROLL_OFF
+	EN	Timbre (Std. deviation of spectral roll off)
+
+BLISSMIXER_METRIC_MEAN_SPEC_FLAT
+	EN	Timbre (Mean of spectral flatness)
+
+BLISSMIXER_METRIC_STD_DEV_SPEC_FLAT
+	EN	Timbre (Std. deviation of spectral flatness)
+
+BLISSMIXER_METRIC_MEAN_LOUDNESS
+	EN	Loudness (Mean value)
+
+BLISSMIXER_METRIC_STD_DEV_LOUDNESS
+	EN	Loudness (Std. deviation)
+
+BLISSMIXER_METRIC_CHROMA_1
+	EN	Chroma (1)
+
+BLISSMIXER_METRIC_CHROMA_2
+	EN	Chroma (2)
+
+BLISSMIXER_METRIC_CHROMA_3
+	EN	Chroma (3)
+
+BLISSMIXER_METRIC_CHROMA_4
+	EN	Chroma (4)
+
+BLISSMIXER_METRIC_CHROMA_5
+	EN	Chroma (5)
+
+BLISSMIXER_METRIC_CHROMA_6
+	EN	Chroma (6)
+
+BLISSMIXER_METRIC_CHROMA_7
+	EN	Chroma (7)
+
+BLISSMIXER_METRIC_CHROMA_8
+	EN	Chroma (8)
+
+BLISSMIXER_METRIC_CHROMA_9
+	EN	Chroma (9)
+
+BLISSMIXER_METRIC_CHROMA_10
+	EN	Chroma (10)

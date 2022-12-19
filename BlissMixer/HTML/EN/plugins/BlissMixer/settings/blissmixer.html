@@ -56,6 +56,72 @@
             [% END %]
         [% END %]
 
+
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+        <b>[% "BLISSMIXER_METRICS" | string %]</b><br/>
+        <div style="opacity:0.6">[% "BLISSMIXER_METRICS_NOTE" | string %]</div><br/>
+
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_TEMPO" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_0" id="weight_0" value="[% prefs.pref_weight_0 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_ZCR" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_1" id="weight_1" value="[% prefs.pref_weight_1 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_MEAN_SPEC_CENT" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_2" id="weight_2" value="[% prefs.pref_weight_2 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_STD_DEV_SPEC_CENT" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_3" id="weight_3" value="[% prefs.pref_weight_3 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_MEAN_SPEC_ROLL_OFF" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_4" id="weight_4" value="[% prefs.pref_weight_4 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_STD_DEV_SPEC_ROLL_OFF" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_5" id="weight_5" value="[% prefs.pref_weight_5 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_MEAN_SPEC_FLAT" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_6" id="weight_6" value="[% prefs.pref_weight_6 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_STD_DEV_SPEC_FLAT" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_7" id="weight_7" value="[% prefs.pref_weight_7 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_MEAN_LOUDNESS" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_8" id="weight_8" value="[% prefs.pref_weight_8 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_STD_DEV_LOUDNESS" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_9" id="weight_9" value="[% prefs.pref_weight_9 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_1" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_10" id="weight_10" value="[% prefs.pref_weight_10 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_2" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_11" id="weight_11" value="[% prefs.pref_weight_11 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_3" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_12" id="weight_12" value="[% prefs.pref_weight_12 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_4" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_13" id="weight_13" value="[% prefs.pref_weight_13 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_5" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_14" id="weight_14" value="[% prefs.pref_weight_14 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_6" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_15" id="weight_15" value="[% prefs.pref_weight_15 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_7" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_16" id="weight_16" value="[% prefs.pref_weight_16 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_8" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_17" id="weight_17" value="[% prefs.pref_weight_17 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_9" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_18" id="weight_18" value="[% prefs.pref_weight_18 %]" size="5">
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA_10" %]
+            <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_19" id="weight_19" value="[% prefs.pref_weight_19 %]" size="5">
+        [% END %]
+
     [% END %]
 
 [% PROCESS settings/footer.html %]

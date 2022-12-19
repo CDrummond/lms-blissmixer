@@ -63,6 +63,7 @@ my $binary;
 # to ensure it is not attempted to be started again
 my $lastMixerStart = 0;
 
+my $lastWeights = "";
 
 sub shutdownPlugin {
     _stopMixer();
@@ -85,7 +86,27 @@ sub initPlugin {
         no_repeat_album  => 25,
         no_repeat_track  => DEF_MAX_PREVIOUS_TRACKS,
         dstm_tracks      => DEF_NUM_DSTM_TRACKS,
-        timeout          => 30
+        timeout          => 30,
+        weight_0         => 50,
+        weight_1         => 50,
+        weight_2         => 50,
+        weight_3         => 50,
+        weight_4         => 50,
+        weight_5         => 50,
+        weight_6         => 50,
+        weight_7         => 50,
+        weight_8         => 50,
+        weight_9         => 50,
+        weight_10        => 50,
+        weight_11        => 50,
+        weight_12        => 50,
+        weight_13        => 50,
+        weight_14        => 50,
+        weight_15        => 50,
+        weight_16        => 50,
+        weight_17        => 50,
+        weight_18        => 50,
+        weight_19        => 50
     });
 
     if ( main::WEBUI ) {
@@ -201,6 +222,15 @@ sub _checkIfMixerReady {
     )->get($url, 'Content-Type' => 'application/json;charset=utf-8');
 }
 
+sub _weightParam {
+    my @weights = ();
+    for (my $i = 0; $i < 20; $i++) {
+        push @weights, (int($prefs->get('weight_' . $i) || 50) * 0.02);
+    }
+    my $str = join(",", @weights);
+    return $str;
+}
+
 sub _startMixer {
     my $allowUploads = shift;
 
@@ -252,6 +282,9 @@ sub _startMixer {
         push @params, "--logging";
         push @params, "debug";
     }
+    push @params, "--weights";
+    $lastWeights = _weightParam();
+    push @params, $lastWeights;
     main::DEBUGLOG && $log->debug("Start mixer with params: @params");
     eval { $mixer = Proc::Background->new({ 'die_upon_destroy' => 1 }, $binary, @params); };
     if ($@) {
@@ -600,6 +633,12 @@ sub _callApi {
     my $api = shift;
     my $callCount = shift;
 
+    my $weights = _weightParam();
+    if ($weights ne $lastWeights) {
+         main::DEBUGLOG && $log->debug("Metric weights changed, LAST: $lastWeights NOW: $weights - stop current mixer");
+        _stopMixer();
+    }
+
     # If mixer is not running, or not yet informed us of its port, then start mixer
     if (!$mixer || !$mixer->alive || $mixerPort<1) {
         if ($binary && $callCount < MAX_MIXER_START_CHECKS) {
@@ -869,6 +908,10 @@ sub similarTracksByArtistHandler {
 
 sub _dstmMix {
     my ($client, $cb, $filterGenres, $callCount) = @_;
+
+    if (_weightParam() ne $lastWeights) {
+        _stopMixer();
+    }
 
     # If mixer is not running, or not yet informed us of its port, then start mixer
     if (!$mixer || !$mixer->alive || $mixerPort<1) {
