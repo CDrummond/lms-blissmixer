@@ -33,7 +33,7 @@ sub page {
 }
 
 sub prefs {
-	return ($prefs, qw(host mixer_port filter_genres filter_xmas min_duration max_duration no_repeat_artist no_repeat_album no_repeat_track dstm_tracks genre_groups weight_0 weight_1 weight_2 weight_3 weight_4 weight_5 weight_6 weight_7 weight_8 weight_9 weight_10 weight_11 weight_12 weight_13 weight_14 weight_15 weight_16 weight_17 weight_18 weight_19));
+	return ($prefs, qw(host mixer_port filter_genres filter_xmas min_duration max_duration no_repeat_artist no_repeat_album no_repeat_track dstm_tracks genre_groups weight_tempo weight_timbre weight_loudness weight_chroma));
 }
 
 sub beforeRender {

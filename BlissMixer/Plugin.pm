@@ -87,26 +87,10 @@ sub initPlugin {
         no_repeat_track  => DEF_MAX_PREVIOUS_TRACKS,
         dstm_tracks      => DEF_NUM_DSTM_TRACKS,
         timeout          => 30,
-        weight_0         => 50,
-        weight_1         => 50,
-        weight_2         => 50,
-        weight_3         => 50,
-        weight_4         => 50,
-        weight_5         => 50,
-        weight_6         => 50,
-        weight_7         => 50,
-        weight_8         => 50,
-        weight_9         => 50,
-        weight_10        => 50,
-        weight_11        => 50,
-        weight_12        => 50,
-        weight_13        => 50,
-        weight_14        => 50,
-        weight_15        => 50,
-        weight_16        => 50,
-        weight_17        => 50,
-        weight_18        => 50,
-        weight_19        => 50
+        weight_tempo     =>  5,
+        weight_timbre    => 35,
+        weight_loudness  => 10,
+        weight_chroma    => 50
     });
 
     if ( main::WEBUI ) {
@@ -224,9 +208,28 @@ sub _checkIfMixerReady {
 
 sub _weightParam {
     my @weights = ();
-    for (my $i = 0; $i < 20; $i++) {
-        push @weights, (int($prefs->get('weight_' . $i) || 50) * 0.02);
+    my $tempo = int($prefs->get('weight_tempo') || 5);
+    my $timbre = int($prefs->get('weight_timbre') || 35);
+    my $loudness = int($prefs->get('weight_loudness') || 10);
+    my $chroma = int($prefs->get('weight_chroma') || 50);
+
+    my $total = $tempo + $timbre + $loudness + $chroma;
+    $tempo = (($tempo / $total) * 100.0) / 5.0;
+    $timbre = (($timbre / $total) * 100.0) / 35.0;
+    $loudness = (($loudness / $total) * 100.0) / 10.0;
+    $chroma = (($chroma / $total) * 100.0) / 50.0;
+
+    push @weights, $tempo;
+    for (my $i = 0; $i < 7; $i++) {
+        push @weights, $timbre;
     }
+    for (my $i = 0; $i < 2; $i++) {
+        push @weights, $loudness;
+    }
+    for (my $i = 0; $i < 10; $i++) {
+        push @weights, $chroma;
+    }
+
     my $str = join(",", @weights);
     return $str;
 }
