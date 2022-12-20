@@ -1,3 +1,7 @@
+0.3.1
+-----
+1. Rebuild Linux biaries on Debian Stetch.
+
 0.3.0
 -----
 1. Allow genres in genre groups to use wildcard, and other regular expressions.
