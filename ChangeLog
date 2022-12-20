@@ -1,7 +1,7 @@
 0.3.0
 -----
 1. Allow genres in genre groups to use wildcard, and other regular expressions.
-2. Allow supplying weights for each metric.
+2. Allow supplying weights for bliss metrics.
 
 0.2.1
 -----
