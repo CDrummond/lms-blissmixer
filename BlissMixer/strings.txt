@@ -136,10 +136,10 @@ BLISSMIXER_PORT_NOTE
 	DE	LMS ist posswortgeschützt. Aus diesem Grund muss die Mixer Binary (welche die Mixes erstellt) auf einem bestimmten Port laufen. Dieser kann hier gesetzt werden.
 
 BLISSMIXER_METRICS
-	EN	Metrics
+	EN	Metric weightings
 
 BLISSMIXER_METRICS_NOTE
-	EN	Tracks are located based upon how close their metrics are to other tracks. Bliss creates 20 such metrics per track; 'Tempo' has a single metric, 'Timbre' has 7 metrics, 'Loudness' has 2 metrics, and 'Chroma' has 10. By default each individual metric has the same 'weight', therefore 'Tempo' makes up 5% of a similarity score, 'Timbre' 35%, 'Loudness' 10%, and 'Chroma' 50%. You may use the settings below to alter this weighting per metric type. For more information, please refer to <a href="https://lelele.io/bliss.html">https://lelele.io/bliss.html</a>
+	EN	Tracks are located based upon how close their metrics are to seed tracks. Bliss creates 20 such metrics per track; 'Tempo' has a single metric, 'Timbre' has 7 metrics, 'Loudness' has 2 metrics, and 'Chroma' has 10. By default each individual metric has the same 'weight', therefore 'Tempo' makes up 5% of a similarity score, 'Timbre' 35%, 'Loudness' 10%, and 'Chroma' 50%. You may use the settings below to alter this weighting per metric type. For more information, please refer to <a href="https://lelele.io/bliss.html">https://lelele.io/bliss.html</a>
 
 BLISSMIXER_METRIC_TEMPO
 	EN	Tempo
