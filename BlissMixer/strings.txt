@@ -152,3 +152,9 @@ BLISSMIXER_METRIC_LOUDNESS
 
 BLISSMIXER_METRIC_CHROMA
 	EN	Chroma
+
+BLISSMIXER_MAX_BPM_DIFF
+	EN	Maximum BPM difference
+
+BLISSMIXER_MAX_BPM_DIFF_DESC
+	EN	Maximum difference between BPM of seed track and candidate tracks. Set to 0 for no maximum.

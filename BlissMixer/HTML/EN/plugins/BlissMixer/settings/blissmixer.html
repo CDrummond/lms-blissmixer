@@ -22,6 +22,10 @@
             <input type="text" class="stdedit" name="pref_max_duration" id="max_duration" value="[% prefs.pref_max_duration %]" size="5">
         [% END %]
 
+        [% WRAPPER settingGroup title="BLISSMIXER_MAX_BPM_DIFF" desc="BLISSMIXER_MAX_BPM_DIFF_DESC" %]
+            <input type="text" class="stdedit sliderInput_0_200_5" name="pref_max_bpm_diff" id="max_bpm_diff" value="[% prefs.pref_max_bpm_diff %]" size="5">
+        [% END %]
+
         [% WRAPPER settingGroup title="BLISSMIXER_NUM_DSTM_TRACKS" desc="BLISSMIXER_NUM_DSTM_TRACKS_DESC" %]
             <input type="text" class="stdedit sliderInput_2_20_1" name="pref_dstm_tracks" id="dstm_tracks" value="[% prefs.pref_dstm_tracks %]" size="5">
         [% END %]

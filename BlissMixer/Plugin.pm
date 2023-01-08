@@ -90,7 +90,8 @@ sub initPlugin {
         weight_tempo     =>  5,
         weight_timbre    => 35,
         weight_loudness  => 10,
-        weight_chroma    => 50
+        weight_chroma    => 50,
+        max_bpm_diff     => 0
     });
 
     if ( main::WEBUI ) {
@@ -1094,6 +1095,7 @@ sub _getMixData {
                         filterxmas  => int($prefs->get('filter_xmas') || 1),
                         min         => int($prefs->get('min_duration') || 0),
                         max         => int($prefs->get('max_duration') || 0),
+                        maxbpmdiff  => int($prefs->get('max_bpm_diff') || 0),
                         tracks      => [@track_paths],
                         previous    => [@previous_paths],
                         shuffle     => int($shuffle),
@@ -1118,6 +1120,7 @@ sub _getListData {
                         filtergenre => int($filterGenres),
                         min         => int($prefs->get('min_duration') || 0),
                         max         => int($prefs->get('max_duration') || 0),
+                        maxbpmdiff  => int($prefs->get('max_bpm_diff') || 0),
                         track       => _trackToPath($mediaDirs, $seedTrack),
                         genregroups => _genreGroups(),
                         byartist    => int($byArtist)
