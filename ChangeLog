@@ -1,6 +1,7 @@
 0.4.0
 -----
 1. Allow specifying maximum BPM difference between tracks.
+2. Fix filtering on Christmas - fix is in bliss-mixer.
 
 0.3.1
 -----
