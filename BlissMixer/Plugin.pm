@@ -950,10 +950,11 @@ sub _dstmMix {
             my ($trackObj) = Slim::Schema->find('Track', $seedTrack);
             if ($trackObj) {
                 main::DEBUGLOG && $log->debug("Seed " . $trackObj->path . " id:" . $seedTrack);
-                push @seedsToUse, $trackObj;
-                push @seedIds, $seedTrack;
                 if ( $trackObj->path =~ m/^spotify:/ ) {
                     $numSpot++;
+                } else if (! ($trackObj->path =~ m/^deezer:/ || $trackObj->path =~ m/^qobuz:/ || $trackObj->path =~ m/^wimp:/) ) {
+                    push @seedsToUse, $trackObj;
+                    push @seedIds, $seedTrack;
                 }
             }
         }
@@ -1011,6 +1012,8 @@ sub _dstmMix {
                     _mixFailed($client, $cb, $numSpot);
                 }
             )->post($url, 'Content-Type' => 'application/json;charset=utf-8', $jsonData);
+        } else {
+            _mixFailed($client, $cb, $numSpot);
         }
     }
 }

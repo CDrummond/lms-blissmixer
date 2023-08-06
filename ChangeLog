@@ -3,6 +3,7 @@
 1. Allow specifying maximum BPM difference between tracks.
 2. Fix filtering on Christmas - fix is in bliss-mixer.
 3. Fix chroma weight setting.
+4. If only have non-local sources then fall back to LastMix.
 
 0.3.1
 -----
