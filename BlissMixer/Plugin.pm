@@ -952,7 +952,7 @@ sub _dstmMix {
                 main::DEBUGLOG && $log->debug("Seed " . $trackObj->path . " id:" . $seedTrack);
                 if ( $trackObj->path =~ m/^spotify:/ ) {
                     $numSpot++;
-                } else if (! ($trackObj->path =~ m/^deezer:/ || $trackObj->path =~ m/^qobuz:/ || $trackObj->path =~ m/^wimp:/) ) {
+                } elsif (! ($trackObj->path =~ m/^deezer:/ || $trackObj->path =~ m/^qobuz:/ || $trackObj->path =~ m/^wimp:/) ) {
                     push @seedsToUse, $trackObj;
                     push @seedIds, $seedTrack;
                 }
