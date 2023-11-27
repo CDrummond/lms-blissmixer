@@ -1091,11 +1091,16 @@ sub _getMixData {
         }
     }
 
+    my $filterXmas = 1;
+    my $filterXmpsPref = $prefs->get('filter_xmas');
+    if (defined $filterXmpsPref) {
+        $filterXmas = int($filterXmpsPref);
+    }
 
     my $jsonData = to_json({
                         count       => int($trackCount),
                         filtergenre => int($filterGenres),
-                        filterxmas  => int($prefs->get('filter_xmas') || 1),
+                        filterxmas  => $filterXmas,
                         min         => int($prefs->get('min_duration') || 0),
                         max         => int($prefs->get('max_duration') || 0),
                         maxbpmdiff  => int($prefs->get('max_bpm_diff') || 0),
@@ -1106,7 +1111,6 @@ sub _getMixData {
                         norepalb    => int($prefs->get('no_repeat_album')),
                         genregroups => _genreGroups()
                     });
-
     main::DEBUGLOG && $log->debug("Request $jsonData");
     return $jsonData;
 }
