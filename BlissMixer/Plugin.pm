@@ -687,7 +687,7 @@ sub _callApi {
             my $useContextMenu = $request->getParam('useContextMenu');
             my @usableTracks = ();
             my @ids          = ();
-            my $mediaDirs    = $serverprefs->get('mediadirs');
+            my $mediaDirs    = Slim::Utils::Misc::getMediaDirs('audio');
 
             # TODO: Add more?
             if ($seedToAdd) {
@@ -980,7 +980,7 @@ sub _dstmMix {
                     my @songs = split(/\n/, $response->content);
                     my $count = scalar @songs;
                     my $tracks = ();
-                    my $mediaDirs = $serverprefs->get('mediadirs');
+                    my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
 
                     for (my $j = 0; $j < $count; $j++) {
                         my $trackObj = _pathToTrack($mediaDirs, $songs[$j]);
@@ -1079,7 +1079,7 @@ sub _getMixData {
     my @mix = ();
     my @track_paths = ();
     my @previous_paths = ();
-    my $mediaDirs = $serverprefs->get('mediadirs');
+    my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
 
     foreach my $track (@tracks) {
         push @track_paths, _trackToPath($mediaDirs, $track);
@@ -1121,7 +1121,7 @@ sub _getListData {
     my $filterGenres = shift;
     my $byArtist = shift;
 
-    my $mediaDirs = $serverprefs->get('mediadirs');
+    my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
     my $jsonData = to_json({
                         count       => int($trackCount),
                         filtergenre => int($filterGenres),
