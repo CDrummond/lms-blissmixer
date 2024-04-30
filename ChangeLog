@@ -1,3 +1,8 @@
+0.5.0
+-----
+1. Optionally use extended isolation forest algorithm to locate similar tracks
+   when more than 1 seed specified.
+
 0.4.1
 -----
 1. Fix setting of Christmas filter.

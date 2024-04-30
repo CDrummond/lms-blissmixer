@@ -30,6 +30,13 @@
             <input type="text" class="stdedit sliderInput_2_20_1" name="pref_dstm_tracks" id="dstm_tracks" value="[% prefs.dstm_tracks %]" size="5">
         [% END %]
 
+        [% WRAPPER settingGroup title="BLISSMIXER_USE_FOREST" desc="BLISSMIXER_USE_FOREST_DESC" %]
+        <select class="stdedit" name="pref_forest" id="forest">
+            <option [% IF NOT prefs.forest %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
+            <option [% IF prefs.forest %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
+        </select>
+        [% END %]
+
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
         <b>[% "GENRES" | string %]</b><br/>
         <div style="opacity:0.6">[% "BLISSMIXER_GENRE_NOTE" | string %]</div><br/>
