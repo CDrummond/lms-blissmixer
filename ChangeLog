@@ -2,6 +2,7 @@
 -----
 1. Fix setting of Christmas filter.
 2. Only look at audio media dirs when parsing paths.
+3. Also send port when sending LMS address to mixer binary.
 
 0.4.0
 -----

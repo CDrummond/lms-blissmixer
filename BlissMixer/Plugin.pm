@@ -271,8 +271,9 @@ sub _startMixer {
         push @params, "--port";
         push @params, $cfgPort;
     } else {
+        my $port = $serverprefs->get('httpport') || 9000;
         push @params, "--lms";
-        push @params, Slim::Utils::Network::serverAddr();
+        push @params, Slim::Utils::Network::serverAddr() . ":" . $port;
     }
     push @params, "--db";
     push @params, $db;
