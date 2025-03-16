@@ -50,6 +50,10 @@
             <textarea class="stdedit" name="pref_genre_groups" id="genre_groups" cols="80" rows="5">[% prefs.genre_groups %]</textarea>
         [% END %]
 
+        [% WRAPPER settingGroup title="BLISSMIXER_USE_TRACK_GENRE" desc="BLISSMIXER_USE_TRACK_GENRE_DESC" %]
+        <input type="checkbox" name="pref_use_track_genre" id="pref_use_track_genre" [% IF prefs.pref_use_track_genre %] checked [% END %] value="1"/>
+        [% END %]
+
         [% IF allowPortConfig %]
             <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
             <div>[% "BLISSMIXER_PORT_NOTE" | string %]</div><br/>

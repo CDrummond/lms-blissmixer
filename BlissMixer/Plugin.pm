@@ -92,7 +92,8 @@ sub initPlugin {
         weight_loudness  => 10,
         weight_chroma    => 50,
         max_bpm_diff     => 0,
-        forest           => 0
+        forest           => 0,
+        use_track_genre  => 0
     });
 
     if ( main::WEBUI ) {
@@ -1140,18 +1141,22 @@ sub _getListData {
     return $jsonData;
 }
 
-my $configuredGenreGroups = [];
-my $configuredGenreGroupsTs = 0;
+my $genreGroups = [];
+my $genreGroupsTs = 0;
+my $useTrackGenreTs = 0;
 
 sub _genreGroups {
     # Check to see if config has changed, saves having to read and process each time
-    my $ts = $prefs->get('_ts_genre_groups');
-    if ($ts==$configuredGenreGroupsTs) {
-        return $configuredGenreGroups;
+    my $ggTs = $prefs->get('_ts_genre_groups');
+    my $utgTs = $prefs->get('_ts_use_track_genre');
+    if ($ggTs==$genreGroupsTs && $utgTs==$useTrackGenreTs) {
+        return $genreGroups;
     }
-    $configuredGenreGroupsTs = $ts;
+    $genreGroupsTs = $ggTs;
+    $useTrackGenreTs = $utgTs;
 
-    $configuredGenreGroups = [];
+    $genreGroups = [];
+    my %genresInGroups=();
     my $ggpref = $prefs->get('genre_groups');
     if ($ggpref) {
         my @lines = split(/\n/, $ggpref);
@@ -1165,14 +1170,32 @@ sub _genreGroups {
                 $genre=~ s/\s+$//;
                 if (length $genre > 0){
                     push(@$grp, $genre);
+                    $genresInGroups{$genre}=1;
                 }
             }
             if (scalar $grp > 0) {
-                push(@$configuredGenreGroups, $grp);
+                push(@$genreGroups, $grp);
             }
         }
     }
-    return $configuredGenreGroups;
+    if ($prefs->get('use_track_genre')) {
+        my $request = Slim::Control::Request->new(undef, ["genres", 0, 5000] );
+        $request->execute();
+        if ( !$request->isStatusError() ) {
+            my $results = $request->getResults();
+            my $items = $results->{'genres_loop'};
+            foreach my $genre (@$items) {
+                my $name = $genre->{'title'};
+                if ($name && (not exists($genresInGroups{$name}))) {
+                    $genresInGroups{$name}=1;
+                    my $grp = ();
+                    push(@$grp, $genre);
+                    push(@$genreGroups, $grp);
+                }
+            }
+        }
+    }
+    return $genreGroups;
 }
 
 1;

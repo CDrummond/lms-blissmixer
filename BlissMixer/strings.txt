@@ -164,3 +164,9 @@ BLISSMIXER_USE_FOREST
 
 BLISSMIXER_USE_FOREST_DESC
 	EN	When creating a mix from 2 or more seed tracks use the 'Extended isolation forest' algorithm to choose tracks.
+
+BLISSMIXER_USE_TRACK_GENRE
+	EN	Use track genre
+
+BLISSMIXER_USE_TRACK_GENRE_DESC
+	EN	If a track is not in a genre group then restrict candidate tracks to seed track's genre.
