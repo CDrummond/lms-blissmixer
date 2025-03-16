@@ -31,10 +31,7 @@
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_USE_FOREST" desc="BLISSMIXER_USE_FOREST_DESC" %]
-        <select class="stdedit" name="pref_forest" id="forest">
-            <option [% IF NOT prefs.forest %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
-            <option [% IF prefs.forest %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
-        </select>
+        <input type="checkbox" name="pref_forest" id="pref_forest" [% IF prefs.pref_forest %] checked [% END %] value="1"/>
         [% END %]
 
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
@@ -42,17 +39,11 @@
         <div style="opacity:0.6">[% "BLISSMIXER_GENRE_NOTE" | string %]</div><br/>
 
         [% WRAPPER settingGroup title="BLISSMIXER_FILTER_GENRES" desc="BLISSMIXER_FILTER_GENRES_DESC" %]
-            <select class="stdedit" name="pref_filter_genres" id="filter_genres">
-                <option [% IF NOT prefs.filter_genres %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
-                <option [% IF prefs.filter_genres %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
-            </select>
+        <input type="checkbox" name="pref_filter_genres" id="pref_filter_genres" [% IF prefs.pref_filter_genres %] checked [% END %] value="1"/>
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_FILTER_XMAS" desc="BLISSMIXER_FILTER_XMAS_DESC" %]
-            <select class="stdedit" name="pref_filter_xmas" id="filter_xmas">
-                <option [% IF NOT prefs.filter_xmas %]selected [% END %]value="0">[% 'NO' | getstring %]</option>
-                <option [% IF prefs.filter_xmas %]selected [% END %]value="1">[% 'YES' | getstring %]</option>
-            </select>
+        <input type="checkbox" name="filter_xmas" id="filter_xmas" [% IF prefs.filter_xmas %] checked [% END %] value="1"/>
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_GENRE_GROUPS" desc="BLISSMIXER_GENRE_GROUPS_DESC" %]
