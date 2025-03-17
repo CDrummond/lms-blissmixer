@@ -1179,19 +1179,14 @@ sub _genreGroups {
         }
     }
     if ($prefs->get('use_track_genre')) {
-        my $request = Slim::Control::Request->new(undef, ["genres", 0, 5000] );
-        $request->execute();
-        if ( !$request->isStatusError() ) {
-            my $results = $request->getResults();
-            my $items = $results->{'genres_loop'};
-            foreach my $genre (@$items) {
-                my $name = $genre->{'title'};
-                if ($name && (not exists($genresInGroups{$name}))) {
-                    $genresInGroups{$name}=1;
-                    my $grp = ();
-                    push(@$grp, $genre);
-                    push(@$genreGroups, $grp);
-                }
+        my $request = Slim::Control::Request::executeRequest(undef, ["genres", 0, 5000] );
+        foreach my $genre ( @{ $request->getResult('genres_loop') || [] } ) {
+            my $name = $genre->{genre};
+            if ($name && (not exists($genresInGroups{$name}))) {
+                $genresInGroups{$name}=1;
+                my $grp = ();
+                push(@$grp, $name);
+                push(@$genreGroups, $grp);
             }
         }
     }
