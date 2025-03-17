@@ -1,8 +1,6 @@
 0.5.0
 -----
-1. Optionally use extended isolation forest algorithm to locate similar tracks
-   when more than 1 seed specified.
-2. Add option to restrict candidate tracks to seed track's genre if seed track
+1. Add option to restrict candidate tracks to seed track's genre if seed track
    is not in a genre group.
 
 0.4.1
