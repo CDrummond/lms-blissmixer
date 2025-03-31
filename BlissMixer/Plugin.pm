@@ -92,7 +92,6 @@ sub initPlugin {
         weight_loudness  => 10,
         weight_chroma    => 50,
         max_bpm_diff     => 0,
-        forest           => 0,
         use_track_genre  => 0
     });
 
@@ -1112,8 +1111,7 @@ sub _getMixData {
                         shuffle     => int($shuffle),
                         norepart    => int($prefs->get('no_repeat_artist')),
                         norepalb    => int($prefs->get('no_repeat_album')),
-                        genregroups => _genreGroups(),
-                        forest      => int($prefs->get('forest') || 0)
+                        genregroups => _genreGroups()
                     });
     main::DEBUGLOG && $log->debug("Request $jsonData");
     return $jsonData;
