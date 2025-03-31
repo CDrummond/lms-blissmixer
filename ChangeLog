@@ -1,3 +1,7 @@
+0.5.1
+-----
+1. Update mixer binary.
+
 0.5.0
 -----
 1. Add option to restrict candidate tracks to seed track's genre if seed track
