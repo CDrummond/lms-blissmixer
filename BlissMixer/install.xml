@@ -4,7 +4,7 @@
 	<id>6979c1ee-0644-4ed1-a440-c5ff6869eae4</id>
 	<name>BLISSMIXER</name>
 	<module>Plugins::BlissMixer::Plugin</module>
-	<version>0.5.0</version>
+	<version>0.5.1</version>
 	<description>BLISSMIXER_DESC</description>
 	<creator>Craig Drummond</creator>
 	<defaultState>
