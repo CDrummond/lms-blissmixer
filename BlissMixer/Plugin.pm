@@ -3,7 +3,7 @@ package Plugins::BlissMixer::Plugin;
 #
 # LMS Bliss Mixer
 #
-# (c) 2022-2023 Craig Drummond
+# (c) 2022-2025 Craig Drummond
 #
 # Licence: GPL v3
 #
@@ -26,12 +26,8 @@ use Slim::Utils::OSDetect;
 use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Prefs;
 
-if ( main::WEBUI ) {
-    require Plugins::BlissMixer::Settings;
-}
-
 use Plugins::BlissMixer::Settings;
-
+use Plugins::BlissMixer::ProtocolHandler;
 
 use constant DEF_NUM_DSTM_TRACKS => 5;
 use constant NUM_SEED_TRACKS => 5;
@@ -130,6 +126,10 @@ sub initPlugin {
         below    => 'addartist',
         func     => \&artistInfoHandler,
     ) );
+
+    Slim::Player::ProtocolHandlers->registerHandler(
+        blissmixer => 'Plugins::BlissMixer::ProtocolHandler'
+    );
 
     my $dir = dirname(__FILE__);
     if (main::ISWINDOWS) {
@@ -364,15 +364,7 @@ sub _cliCommand {
         return;
     }
 
-    # get our parameters
-    my $tags   = $request->getParam('tags') || 'al';
-
-    my $params = {
-        track  => $request->getParam('track_id'),
-        artist => $request->getParam('artist_id'),
-        album  => $request->getParam('album_id'),
-        genre  => $request->getParam('genre_id')
-    };
+    my $count = $request->getParam('count') || -1;
 
     my @seedsToUse = ();
     if ($request->getParam('track_id')) {
@@ -425,6 +417,9 @@ sub _cliCommand {
     if (scalar @seedsToUse > 0) {
         if ($cmd eq 'mix') {
             my $numTracks = (scalar @seedsToUse) > 2 ? NUM_MIX_TRACKS : NUM_MIX_TRACKS_FEW;
+            if ($count>0 && $count<$numTracks) {
+                $numTracks = $count;
+            }
             my $jsonData = _getMixData(\@seedsToUse, undef, $numTracks, 1, $prefs->get('filter_genres') || 0);
 
             Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
@@ -432,8 +427,12 @@ sub _cliCommand {
                 $request->setStatusProcessing();
             }
         } else { # list
-            my $jsonData = _getListData(@seedsToUse[0], NUM_LIST_TRACKS, $prefs->get('filter_genres') || 0, $request->getParam('byArtist') || 0);
-            if (0==_callApi($request, $jsonData, NUM_LIST_TRACKS, undef, "list", 0)) {
+            my $numTracks = NUM_LIST_TRACKS;
+            if ($count>0 && $count<$numTracks) {
+                $numTracks = $count;
+            }
+            my $jsonData = _getListData(@seedsToUse[0], $numTracks, $prefs->get('filter_genres') || 0, $request->getParam('byArtist') || 0);
+            if (0==_callApi($request, $jsonData, $numTracks, undef, "list", 0)) {
                 $request->setStatusProcessing();
             }
         }
