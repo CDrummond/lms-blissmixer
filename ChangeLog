@@ -2,6 +2,7 @@
 -----
 1. Add 'blissmixer://' protocol handler to allow starting mixes from
    favourites, etc.
+2. Store DB file in LMS's prefs folder (as per LMS's persist.db).
 
 0.5.1
 -----

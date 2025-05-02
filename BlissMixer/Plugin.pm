@@ -14,6 +14,7 @@ use Scalar::Util qw(blessed);
 use LWP::UserAgent;
 use JSON::XS::VersionOneAndTwo;
 use File::Basename;
+use File::Copy;
 use File::Slurp;
 use File::Spec;
 use File::Spec::Functions qw(catdir);
@@ -48,6 +49,7 @@ my $log = Slim::Utils::Log->addLogCategory({
 
 my $prefs = preferences('plugin.blissmixer');
 my $serverprefs = preferences('server');
+my $dbPath = "";
 my $initialized = 0;
 # Current bliss-mixer process
 my $mixer;
@@ -139,6 +141,14 @@ sub initPlugin {
     }
     $binary = Slim::Utils::Misc::findbin('bliss-mixer');
     main::INFOLOG && $log->info("Mixer: ${binary}");
+
+    my $dbDir = Slim::Utils::Prefs::dir() || Slim::Utils::OSDetect::dirsFor('prefs');
+    my $prevDbPath = $serverprefs->get('cachedir') . "/" . DB_NAME;
+    $dbPath = $dbDir . "/" . DB_NAME;
+    if ((-e $prevDbPath) && (! -e $dbPath)) {
+        move($prevDbPath, $dbPath);
+    }
+
     $initialized = 1;
     return $initialized;
 }
@@ -255,12 +265,9 @@ sub _startMixer {
     }
 
     $lastMixerStart = 0;
-    my $db = $serverprefs->get('cachedir') . "/" . DB_NAME;
-    if ($allowUploads == 0) {
-        if (! -e $db) {
-            $log->warn("No database ($db)");
-            return 0;
-        }
+    if (($allowUploads == 0) && (! -e $dbPath)) {
+        $log->warn("No database ($dbPath)");
+        return 0;
     }
     $mixerPort = 0;
     my $cfgPort = int($prefs->get('mixer_port') || 0);
@@ -277,7 +284,7 @@ sub _startMixer {
         push @params, Slim::Utils::Network::serverAddr() . ":" . $port;
     }
     push @params, "--db";
-    push @params, $db;
+    push @params, $dbPath;
     if ($allowUploads == 1) {
         push @params, "--upload";
     } else {
