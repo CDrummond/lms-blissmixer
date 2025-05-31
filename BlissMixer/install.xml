@@ -5,7 +5,7 @@
 	<icon>plugins/BlissMixer/html/images/blissmixer.png</icon>
 	<name>BLISSMIXER</name>
 	<module>Plugins::BlissMixer::Plugin</module>
-	<version>0.5.1</version>
+	<version>0.6.0</version>
 	<description>BLISSMIXER_DESC</description>
 	<creator>Craig Drummond</creator>
 	<defaultState>
