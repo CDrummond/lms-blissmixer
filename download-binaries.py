@@ -3,7 +3,7 @@
 #
 # LMS-BlissMixer
 #
-# Copyright (c) 2022-2023 Craig Drummond <craig.p.drummond@gmail.com>
+# Copyright (c) 2022-2025 Craig Drummond <craig.p.drummond@gmail.com>
 # MIT license.
 #
 
@@ -11,14 +11,23 @@ import datetime, hashlib, os, requests, shutil, subprocess, tempfile, time
 
 PLUGIN_NAME = "BlissMixer"
 GITHUB_TOKEN_FILE = "%s/.config/github-token" % os.path.expanduser('~')
-GITHUB_REPO = "CDrummond/bliss-mixer"
-GITHUB_ARTIFACTS = ["bliss-mixer-linux", "bliss-mixer-mac", "bliss-mixer.exe"]
-GITHUB_ARTIFACT_ZIPS = ["linux.zip", "mac.zip", "windows.zip"]
-ARTIFACT_MAP = { "armhf-linux/bliss-mixer":   "armhf-linux/bliss-mixer",
-                 "aarch64-linux/bliss-mixer": "aarch64-linux/bliss-mixer",
-                 "x86_64-linux/bliss-mixer":  "x86_64-linux/bliss-mixer",
-                 "bliss-mixer":               "mac/bliss-mixer",
-                 "bliss-mixer.exe":           "windows/bliss-mixer.exe"}
+MIXER_GITHUB_REPO = "CDrummond/bliss-mixer"
+MIXER_GITHUB_ARTIFACTS = ["bliss-mixer-linux", "bliss-mixer-mac", "bliss-mixer.exe"]
+MIXER_GITHUB_ARTIFACT_ZIPS = ["linux.zip", "mac.zip", "windows.zip"]
+MIXER_ARTIFACT_MAP = { "armhf-linux/bliss-mixer":   "armhf-linux/bliss-mixer",
+                       "aarch64-linux/bliss-mixer": "aarch64-linux/bliss-mixer",
+                       "x86_64-linux/bliss-mixer":  "x86_64-linux/bliss-mixer",
+                       "bliss-mixer":               "mac/bliss-mixer",
+                       "bliss-mixer.exe":           "windows/bliss-mixer.exe"}
+ANALYSER_GITHUB_REPO = "CDrummond/bliss-analyser"
+ANALYSER_GITHUB_ARTIFACTS = ["bliss-analyser-linux-x86", "bliss-analyser-linux-arm", "bliss-analyser-mac", "bliss-analyser-windows"]
+ANALYSER_GITHUB_ARTIFACT_ZIPS = ["linux-x86.zip", "linux-arm.zip", "mac.zip", "windows.zip"]
+ANALYSER_ARTIFACT_MAP = { "armhf-linux/bliss-analyser":   "armhf-linux/bliss-analyser",
+                          "aarch64-linux/bliss-analyser": "aarch64-linux/bliss-analyser",
+                          "x86_64-linux/bliss-analyser":  "x86_64-linux/bliss-analyser",
+                          "bliss-analyser":               "mac/bliss-analyser",
+                          "bliss-analyser.exe":           "windows/bliss-analyser.exe"}
+
 
 def info(s):
     print("INFO: %s" %s)
@@ -45,28 +54,17 @@ def get_urls(repo, artifacts):
             items[a["name"]]={"date":to_time(a["created_at"]), "url":a["archive_download_url"]}
 
     resp=[]
-    for a in artifacts:
-        if a in items:
-            resp.append(items[a]["url"])
-    return resp
-
-
-def getMd5sum(path):
-    if not os.path.exists(path):
-        return '000'
-    md5 = hashlib.md5()
-    with open(path, 'rb') as f:
-        while True:
-            data = f.read(65535)
+    for a in artifacts:armhf
+        if a in items:armhf
             if not data:
                 break
             md5.update(data)
     return md5.hexdigest()
 
 
-def download_artifacts():
-    urls = get_urls(GITHUB_REPO, GITHUB_ARTIFACTS)
-    if len(urls)!=len(GITHUB_ARTIFACTS):
+def download_artifacts(repo, artifacts, artifactZips, artifactMap):
+    urls = get_urls(MIXER_GITHUB_REPO, artifacts)
+    if len(urls)!=len(artifacts):
         error("Failed to determine all artifacts")
     token = None
     with open(GITHUB_TOKEN_FILE, "r") as f:
@@ -79,7 +77,7 @@ def download_artifacts():
         for url in urls:
             info("Downloading %s" % url)
             r = requests.get(url, headers=headers, stream=True)
-            dest = os.path.join(td, GITHUB_ARTIFACT_ZIPS[i])
+            dest = os.path.join(td, artifactZips[i])
             with open(dest, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=1024*1024): 
                     if chunk:
@@ -91,9 +89,9 @@ def download_artifacts():
             subprocess.call(["unzip", dest, "-d", td], shell=False)
             i+=1
 
-        for a in ARTIFACT_MAP:
+        for a in artifactMap:
             asrc = "%s/%s" % (td, a)
-            adest = "%s/%s/Bin/%s" % (os.path.dirname(os.path.abspath(__file__)), PLUGIN_NAME, ARTIFACT_MAP[a])
+            adest = "%s/%s/Bin/%s" % (os.path.dirname(os.path.abspath(__file__)), PLUGIN_NAME, artifactMap[a])
             srcMd5 = getMd5sum(asrc)
             destMd5 = getMd5sum(adest)
             if srcMd5!=destMd5:
@@ -107,5 +105,7 @@ def download_artifacts():
     elif not updated:
         info("No changes")
 
-download_artifacts()
+
+download_artifacts(MIXER_GITHUB_REPO, MIXER_GITHUB_ARTIFACTS, MIXER_GITHUB_ARTIFACT_ZIPS, MIXER_ARTIFACT_MAP)
+download_artifacts(ANALYSER_GITHUB_REPO,ANALYSER_GITHUB_ARTIFACTS, ANALYSER_GITHUB_ARTIFACT_ZIPS, ANALYSER_ARTIFACT_MAP)
 

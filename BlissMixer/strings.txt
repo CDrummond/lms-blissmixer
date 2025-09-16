@@ -164,3 +164,27 @@ BLISSMIXER_USE_TRACK_GENRE
 
 BLISSMIXER_USE_TRACK_GENRE_DESC
 	EN	If a track is not in a genre group then restrict candidate tracks to seed track's genre.
+
+BLISSMIXER_ANALYSER
+	EN	Analyser
+
+BLISSMIXER_ANALYSER_NOTE
+	EN	Before you can use this mixer your music files first need to be analysed. This can be performed automatically after each LMS scan, or you can manually initiate this using the 'Start analysis' button below. Please note, however, that this can take a long time to complete. If you are runnnig on a low-power machine you can download the analyser separately and run on a more powerful machine (<a href="https://github.com/CDrummond/bliss-analyser/releases" target="_blank">releases</a>, <a href="https://raw.githubusercontent.com/CDrummond/bliss-analyser/refs/heads/master/UserGuide.md" target="_blank">user guide</a>)
+
+BLISSMIXER_RUN_AFTER_SCAN
+	EN	Automatic analysis
+
+BLISSMIXER_RUN_AFTER_SCAN_DESC
+	EN	Automatically run the anlyser after LMS scans your music collection.
+
+BLISSMIXER_ANALYSE_FILES
+	EN	Analyse files
+
+BLISSMIXER_ANALYSE_FILES_DESC
+	EN	Use the 'Start analysis' button to analyse your music files, and 'Abort analysis' to abort this if its already running.
+
+BLISSMIXER_ANALYSE_START_BUTTON
+	EN	Start analysis
+
+BLISSMIXER_ANALYSE_ABORT_BUTTON
+	EN	Abort analysis

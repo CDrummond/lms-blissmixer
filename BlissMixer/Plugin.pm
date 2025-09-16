@@ -27,6 +27,7 @@ use Slim::Utils::OSDetect;
 use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Prefs;
 
+use Plugins::BlissMixer::Importer;
 use Plugins::BlissMixer::Settings;
 use Plugins::BlissMixer::ProtocolHandler;
 
@@ -55,8 +56,8 @@ my $initialized = 0;
 my $mixer;
 # Port number mixer is running on
 my $mixerPort = 0;
-# Path too bliss-mixer that will be used on current system
-my $binary;
+# Path to bliss-mixer that will be used on current system
+my $mixerBinary;
 # store time when bliss-mixer was started. This is then checked in _startMixer
 # to ensure it is not attempted to be started again
 my $lastMixerStart = 0;
@@ -90,8 +91,11 @@ sub initPlugin {
         weight_loudness  => 10,
         weight_chroma    => 50,
         max_bpm_diff     => 0,
-        use_track_genre  => 0
+        use_track_genre  => 0,
+        run_analyser_after_scan => 0
     });
+
+    $prefs->setChange(\&Plugins::BlissMixer::Importer::toggleUseImporter, 'run_analyser_after_scan');
 
     if ( main::WEBUI ) {
         Plugins::BlissMixer::Settings->new;
@@ -133,14 +137,7 @@ sub initPlugin {
         blissmixer => 'Plugins::BlissMixer::ProtocolHandler'
     );
 
-    my $dir = dirname(__FILE__);
-    if (main::ISWINDOWS) {
-        Slim::Utils::Misc::addFindBinPaths(catdir($dir, 'Bin', 'windows'));
-    } elsif (main::ISMAC) {
-        Slim::Utils::Misc::addFindBinPaths(catdir($dir, 'Bin', 'mac'));
-    }
-    $binary = Slim::Utils::Misc::findbin('bliss-mixer');
-    main::INFOLOG && $log->info("Mixer: ${binary}");
+    _initBinaries();
 
     my $dbDir = Slim::Utils::Prefs::dir() || Slim::Utils::OSDetect::dirsFor('prefs');
     my $prevDbPath = $serverprefs->get('cachedir') . "/" . DB_NAME;
@@ -170,6 +167,37 @@ sub postinitPlugin {
     }
 }
 
+sub _initBinaries {
+    my $dir = dirname(__FILE__);
+    my $bindir = catdir($dir, 'Bin');
+    if (main::ISWINDOWS) {
+        Slim::Utils::Misc::addFindBinPaths(catdir($bindir, 'windows'));
+    } elsif (main::ISMAC) {
+        Slim::Utils::Misc::addFindBinPaths(catdir($bindir, 'mac'));
+    }
+    $mixerBinary = Slim::Utils::Misc::findbin('bliss-mixer');
+    main::INFOLOG && $log->info("Mixer: ${mixerBinary}");
+    my $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
+    main::INFOLOG && $log->info("Analyser: ${analyserBinary}");
+
+    # All binaries take just over 100Mb! So, remove any binaries
+    # that are for other OSs.
+    my @mixers = glob("${bindir}/*/bliss-mixer*");
+    foreach my $bin (@mixers) {
+        if ($bin ne $mixerBinary) {
+            main::INFOLOG && $log->info("Removing mixer mixer for other OS: ${bin}");
+            unlink($bin);
+        }
+    }
+    my @analysers = glob("${bindir}/*/bliss-analyser*");
+    foreach my $bin (@analysers) {
+        if ($bin ne $analyserBinary) {
+            main::INFOLOG && $log->info("Removing analyser binary for other OS: ${bin}");
+            unlink($bin);
+        }
+    }
+}
+
 sub _resetMixerTimeout {
     Slim::Utils::Timers::killTimers(undef, \&_stopMixer);
     Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + STOP_MIXER, \&_stopMixer);
@@ -180,7 +208,7 @@ sub _stopMixer {
     if ($mixer && $mixer->alive) {
         $mixer->die;
     } else {
-        main::DEBUGLOG && $log->debug("$binary not running");
+        main::DEBUGLOG && $log->debug("$mixerBinary not running");
     }
     $lastMixerStart = 0;
 }
@@ -250,9 +278,9 @@ sub _startMixer {
     my $allowUploads = shift;
 
     if ($mixer && $mixer->alive) {
-        main::DEBUGLOG && $log->debug("$binary already running");
+        main::DEBUGLOG && $log->debug("$mixerBinary already running");
     }
-    if (!$binary) {
+    if (!$mixerBinary) {
         $log->warn("No mixer binary");
         return 0;
     }
@@ -299,13 +327,13 @@ sub _startMixer {
     $lastWeights = _weightParam();
     push @params, $lastWeights;
     main::DEBUGLOG && $log->debug("Start mixer with params: @params");
-    eval { $mixer = Proc::Background->new({ 'die_upon_destroy' => 1 }, $binary, @params); };
+    eval { $mixer = Proc::Background->new({ 'die_upon_destroy' => 1 }, $mixerBinary, @params); };
     if ($@) {
         $log->warn($@);
     } else {
         Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
             if ($mixer && $mixer->alive) {
-                main::DEBUGLOG && $log->debug("$binary running");
+                main::DEBUGLOG && $log->debug("$mixerBinary running");
                 # Mixer is running. If we have a hard-coded port then mixer will not inform us of its
                 # ready state by sending this port. Therefore if we are in upload mode, assume its ready,
                 # else poll its api/ready - as it might be reading db file...
@@ -317,7 +345,7 @@ sub _startMixer {
                     }
                 }
             } else {
-                main::DEBUGLOG && $log->debug("$binary NOT running");
+                main::DEBUGLOG && $log->debug("$mixerBinary NOT running");
             }
         });
     }
@@ -653,7 +681,7 @@ sub _callApi {
 
     # If mixer is not running, or not yet informed us of its port, then start mixer
     if (!$mixer || !$mixer->alive || $mixerPort<1) {
-        if ($binary && $callCount < MAX_MIXER_START_CHECKS) {
+        if ($mixerBinary && $callCount < MAX_MIXER_START_CHECKS) {
             $callCount++;
             my $ok = _startMixer(0);
             if ($ok == 1) {
@@ -927,7 +955,7 @@ sub _dstmMix {
 
     # If mixer is not running, or not yet informed us of its port, then start mixer
     if (!$mixer || !$mixer->alive || $mixerPort<1) {
-        if ($binary && $callCount < MAX_MIXER_START_CHECKS) {
+        if ($mixerBinary && $callCount < MAX_MIXER_START_CHECKS) {
             $callCount++;
             my $ok = _startMixer(0);
             if ($ok == 1) {
