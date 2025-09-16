@@ -54,7 +54,7 @@ sub rescan {
         push @params, "--ignore";
         push @params, $prefsDir . "/bliss-ignore.txt";
         push @params, "analyse-lms";
-        main::DEBUGLOG && $log->debug("Start analyser with params: @params");
+        main::DEBUGLOG && $log->debug("Start analyser: $analyserBinary @params");
         eval { Proc::Background->new({ 'die_upon_destroy' => 1 }, $analyserBinary, @params); };
     }
 }

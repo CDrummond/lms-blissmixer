@@ -326,7 +326,7 @@ sub _startMixer {
     push @params, "--weights";
     $lastWeights = _weightParam();
     push @params, $lastWeights;
-    main::DEBUGLOG && $log->debug("Start mixer with params: @params");
+    main::DEBUGLOG && $log->debug("Start mixer: $mixerBinary @params");
     eval { $mixer = Proc::Background->new({ 'die_upon_destroy' => 1 }, $mixerBinary, @params); };
     if ($@) {
         $log->warn($@);
