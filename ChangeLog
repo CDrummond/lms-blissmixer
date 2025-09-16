@@ -1,7 +1,8 @@
-0.6.1
+0.7.0
 -----
 1. Add 'exclude christmas' support to list 'similar tracks' - thanks to
    VictorvandenHoven
+2. Update to use new bliss-rs analysis results.
 
 0.6.0
 -----

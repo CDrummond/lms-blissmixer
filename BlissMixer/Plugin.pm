@@ -220,16 +220,16 @@ sub _checkIfMixerReady {
 
 sub _weightParam {
     my @weights = ();
-    my $tempo = int($prefs->get('weight_tempo') || 5);
-    my $timbre = int($prefs->get('weight_timbre') || 35);
-    my $loudness = int($prefs->get('weight_loudness') || 10);
-    my $chroma = int($prefs->get('weight_chroma') || 50);
+    my $tempo = int($prefs->get('weight_tempo') || 4);
+    my $timbre = int($prefs->get('weight_timbre') || 30);
+    my $loudness = int($prefs->get('weight_loudness') || 9);
+    my $chroma = int($prefs->get('weight_chroma') || 57);
 
     my $total = $tempo + $timbre + $loudness + $chroma;
-    $tempo = (($tempo / $total) * 100.0) / 5.0;
-    $timbre = (($timbre / $total) * 100.0) / 35.0;
-    $loudness = (($loudness / $total) * 100.0) / 10.0;
-    $chroma = (($chroma / $total) * 100.0) / 50.0;
+    $tempo = (($tempo / $total) * 100.0) / 4.0;
+    $timbre = (($timbre / $total) * 100.0) / 30.0;
+    $loudness = (($loudness / $total) * 100.0) / 9.0;
+    $chroma = (($chroma / $total) * 100.0) / 57.0;
 
     push @weights, $tempo;
     for (my $i = 0; $i < 7; $i++) {
@@ -238,7 +238,7 @@ sub _weightParam {
     for (my $i = 0; $i < 2; $i++) {
         push @weights, $loudness;
     }
-    for (my $i = 0; $i < 10; $i++) {
+    for (my $i = 0; $i < 13; $i++) {
         push @weights, $chroma;
     }
 
