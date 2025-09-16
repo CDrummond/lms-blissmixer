@@ -188,3 +188,9 @@ BLISSMIXER_ANALYSE_START_BUTTON
 
 BLISSMIXER_ANALYSE_ABORT_BUTTON
 	EN	Abort analysis
+
+BLISSMIXER_MIX_SETTINGS
+	EN	Mixer settings
+
+BLISSMIXER_MIX_SETTINGS_NOTE
+	EN	The following settings control how tracks are selected for mixes.

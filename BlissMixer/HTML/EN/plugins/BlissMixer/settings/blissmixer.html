@@ -2,6 +2,24 @@
 
     [% WRAPPER settingSection %]
 
+        <b style="font-size:120%">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
+        <div style="opacity:0.6">[% "BLISSMIXER_ANALYSER_NOTE" | string %]</div><br/>
+        [% WRAPPER settingGroup title="BLISSMIXER_RUN_AFTER_SCAN" desc="BLISSMIXER_RUN_AFTER_SCAN_DESC" %]
+        <input type="checkbox" name="pref_run_analyser_after_scan" id="run_analyser_after_scan" [% IF prefs.run_analyser_after_scan %] checked [% END %] value="1"/>
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_FILES" desc="BLISSMIXER_ANALYSE_FILES_DESC" %]
+          [% IF analysisRunning %]
+          <input class="btn btn2" id="abort" name="abortscan" type="submit" class="stdclick" value="[% "BLISSMIXER_ANALYSE_ABORT_BUTTON" | string %]">
+          [% ELSE %]
+          <input class="btn" id="scan" name="rescan" type="submit" class="stdclick" value="[% "BLISSMIXER_ANALYSE_START_BUTTON" | string %]">
+          [% END %]
+        [% END %]
+
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+        <b style="font-size:120%">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
+        <div style="opacity:0.6">[% "BLISSMIXER_MIX_SETTINGS_NOTE" | string %]</div><br/>
+
         [% WRAPPER settingGroup title="BLISSMIXER_NO_REPEAT_ARTIST" desc="BLISSMIXER_NO_REPEAT_ARTIST_DESC" %]
             <input type="text" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_artist" id="no_repeat_artist" value="[% prefs.no_repeat_artist %]" size="5">
         [% END %]
@@ -74,22 +92,6 @@
         [% END %]
         [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA" %]
             <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_chroma" id="weight_chroma" value="[% prefs.weight_chroma %]" size="5">
-        [% END %]
-
-        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
-        <b style="font-size:120%">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
-        <div style="opacity:0.6">[% "BLISSMIXER_ANALYSER_NOTE" | string %]</div><br/>
-        [% WRAPPER settingGroup title="BLISSMIXER_RUN_AFTER_SCAN" desc="BLISSMIXER_RUN_AFTER_SCAN_DESC" %]
-        <input type="checkbox" name="pref_run_analyser_after_scan" id="run_analyser_after_scan" [% IF prefs.run_analyser_after_scan %] checked [% END %] value="1"/>
-        [% END %]
-
-
-        [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_FILES" desc="BLISSMIXER_ANALYSE_FILES_DESC" %]
-          [% IF analysisRunning %]
-          <input class="btn btn2" id="abort" name="abortscan" type="submit" class="stdclick" value="[% "BLISSMIXER_ANALYSE_ABORT_BUTTON" | string %]">
-          [% ELSE %]
-          <input class="btn" id="scan" name="rescan" type="submit" class="stdclick" value="[% "BLISSMIXER_ANALYSE_START_BUTTON" | string %]">
-          [% END %]
         [% END %]
 
     [% END %]
