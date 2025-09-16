@@ -23,6 +23,7 @@ our %EXPORT_TAGS = (
 );
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{all} } );
 
+my $analyser;
 
 sub rescan {
     main::DEBUGLOG && $log->is_debug && $log->debug('Analysing...');
@@ -55,12 +56,16 @@ sub rescan {
         push @params, $prefsDir . "/bliss-ignore.txt";
         push @params, "analyse-lms";
         main::DEBUGLOG && $log->debug("Start analyser: $analyserBinary @params");
-        eval { Proc::Background->new({ 'die_upon_destroy' => 1 }, $analyserBinary, @params); };
+        eval { $analyser = Proc::Background->new({ 'die_upon_destroy' => 1 }, $analyserBinary, @params); };
     }
 }
 
 sub abortScan {
     if (isScanning()) {
+        if ($analyser && $analyser->alive) {
+            $log->info("killing bliss-analyser");
+            $analyser->die;
+        }
         main::DEBUGLOG && $log->is_debug && $log->debug('Aborting analysis');
         if ($^O eq 'MSWin32') {
             `taskkill /IM "bliss-analyser.exe" /F /T`
@@ -71,17 +76,19 @@ sub abortScan {
 }
 
 sub isScanning {
-    my $running = 0;
-    if ($^O eq 'MSWin32') {
-        my $output = `tasklist /FI "IMAGENAME eq bliss-analyser.exe" /FO CSV`;
-        if ($output =~ /bliss-analyser.exe/) {
-            $running = 1;
-        }
-    } else {
-        # Unix-like systems (Linux, macOS, etc.)
-        my $output = `ps aux | grep -v grep | grep bliss-analyser`;
-        if ($output) {
-            $running = 1;
+    my $running = $analyser && $analyser->alive ? 1 : 0;
+    if ($running==0) {
+        if ($^O eq 'MSWin32') {
+            my $output = `tasklist /FI "IMAGENAME eq bliss-analyser.exe" /FO CSV`;
+            if ($output =~ /bliss-analyser.exe/) {
+                $running = 1;
+            }
+        } else {
+            # Unix-like systems (Linux, macOS, etc.)
+            my $output = `ps aux | grep -v grep | grep bliss-analyser`;
+            if ($output) {
+                $running = 1;
+            }
         }
     }
     return $running;
