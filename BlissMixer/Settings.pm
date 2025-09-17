@@ -33,21 +33,25 @@ sub page {
 }
 
 sub prefs {
-    return ($prefs, 'host mixer_port', 'filter_genres', 'filter_xmas', 'min_duration', 'max_duration', 'no_repeat_artist', 'no_repeat_album', 'no_repeat_track', 'dstm_tracks', 'genre_groups', 'weight_tempo', 'weight_timbre', 'weight_loudness', 'weight_chroma', 'max_bpm_diff', 'use_track_genre', 'run_analyser_after_scan', 'analysis_running');
+    return ($prefs, 'host mixer_port', 'filter_genres', 'filter_xmas', 'min_duration', 'max_duration',
+                    'no_repeat_artist', 'no_repeat_album', 'no_repeat_track', 'dstm_tracks', 'genre_groups',
+                    'weight_tempo', 'weight_timbre', 'weight_loudness', 'weight_chroma', 'max_bpm_diff',
+                    'use_track_genre', 'run_analyser_after_scan', 'analysis_tags');
 }
 
 sub beforeRender {
     my ($class, $paramRef) = @_;
     $paramRef->{allowPortConfig} = $serverprefs->get('authorize');
-    $paramRef->{'analysisRunning'} = 1 if Plugins::BlissMixer::Analyser::isScanning();
+    my $host = $paramRef->{host} || (Slim::Utils::Network::serverAddr() . ':' . $serverprefs->get('httpport'));
+    $paramRef->{'jsonrpc_url'} = "http://${host}/jsonrpc.js";
+    $paramRef->{'start_analysis_text'} = string('BLISSMIXER_ANALYSE_START_BUTTON');
+    $paramRef->{'stop_analysis_text'} = string('BLISSMIXER_ANALYSE_ABORT_BUTTON');
 }
 
 sub handler {
     my ($class, $client, $paramRef) = @_;
-    if ($paramRef->{'rescan'}) {
-        Plugins::BlissMixer::Analyser::rescan();
-    } elsif ($paramRef->{'abortscan'}) {
-        Plugins::BlissMixer::Analyser::abortScan();
+    if ($paramRef->{'analyser'}) {
+        Slim::Control::Request::executeRequest( undef, [ 'blissmixer', 'analyser' ] );
     }
     return $class->SUPER::handler($client, $paramRef);
 }

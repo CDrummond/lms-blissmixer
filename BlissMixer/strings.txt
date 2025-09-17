@@ -189,6 +189,12 @@ BLISSMIXER_ANALYSE_START_BUTTON
 BLISSMIXER_ANALYSE_ABORT_BUTTON
 	EN	Abort analysis
 
+BLISSMIXER_ANALYSE_TAGS
+	EN	Store results in files
+
+BLISSMIXER_ANALYSE_TAGS_DESC
+	EN	Store the analysis results as a custom tag within the files themselves.
+
 BLISSMIXER_MIX_SETTINGS
 	EN	Mixer settings
 

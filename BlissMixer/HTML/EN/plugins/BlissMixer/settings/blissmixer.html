@@ -4,16 +4,16 @@
 
         <b style="font-size:120%">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
         <div style="opacity:0.6">[% "BLISSMIXER_ANALYSER_NOTE" | string %]</div><br/>
+
+        [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_TAGS" desc="BLISSMIXER_ANALYSE_TAGS_DESC" %]
+        <input type="checkbox" name="pref_analysis_tags" id="analysis_tags" [% IF prefs.analysis_tags %] checked [% END %] value="1"/>
+        [% END %]
         [% WRAPPER settingGroup title="BLISSMIXER_RUN_AFTER_SCAN" desc="BLISSMIXER_RUN_AFTER_SCAN_DESC" %]
         <input type="checkbox" name="pref_run_analyser_after_scan" id="run_analyser_after_scan" [% IF prefs.run_analyser_after_scan %] checked [% END %] value="1"/>
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_FILES" desc="BLISSMIXER_ANALYSE_FILES_DESC" %]
-          [% IF analysisRunning %]
-          <input class="btn btn2" id="abort" name="abortscan" type="submit" class="stdclick" value="[% "BLISSMIXER_ANALYSE_ABORT_BUTTON" | string %]">
-          [% ELSE %]
-          <input class="btn" id="scan" name="rescan" type="submit" class="stdclick" value="[% "BLISSMIXER_ANALYSE_START_BUTTON" | string %]">
-          [% END %]
+          <input class="btn btn2" id="analyser" name="analyser" type="submit" class="stdclick" value="">
         [% END %]
 
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
@@ -53,7 +53,7 @@
         <div style="opacity:0.6">[% "BLISSMIXER_GENRE_NOTE" | string %]</div><br/>
 
         [% WRAPPER settingGroup title="BLISSMIXER_FILTER_GENRES" desc="BLISSMIXER_FILTER_GENRES_DESC" %]
-        <input type="checkbox" name="pref_filter_genres" id="pref_filter_genres" [% IF prefs.pref_filter_genres %] checked [% END %] value="1"/>
+        <input type="checkbox" name="pref_filter_genres" id="filter_genres" [% IF prefs.filter_genres %] checked [% END %] value="1"/>
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_FILTER_XMAS" desc="BLISSMIXER_FILTER_XMAS_DESC" %]
@@ -65,7 +65,7 @@
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_USE_TRACK_GENRE" desc="BLISSMIXER_USE_TRACK_GENRE_DESC" %]
-        <input type="checkbox" name="pref_use_track_genre" id="pref_use_track_genre" [% IF prefs.pref_use_track_genre %] checked [% END %] value="1"/>
+        <input type="checkbox" name="pref_use_track_genre" id="use_track_genre" [% IF prefs.use_track_genre %] checked [% END %] value="1"/>
         [% END %]
 
         [% IF allowPortConfig %]
@@ -97,3 +97,46 @@
     [% END %]
 
 [% PROCESS settings/footer.html %]
+
+<script type="text/javascript">
+    window.addEventListener("load",() => {
+        let statusInterval = setInterval(getStatus, 1000);
+        let analyseButton = undefined;
+        let msgCount = 0;
+
+        getStatus();
+
+        function getStatus() {
+            async function sendMsg() {
+                const serverjsonurl = "[% jsonrpc_url %]";
+                const msg = JSON.stringify({id: 1, method: 'slim.request', params: ['', ['blissmixer', 'analyser', 'act:status']]});
+                let response = await fetch(serverjsonurl, {
+                    method: "post",
+                    headers: { "Content-Type": "application/json", "Origin": window.location.hostname },
+                    body: msg
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            }
+
+            sendMsg().then((resp) => {
+                if (undefined!=resp && undefined!=resp.result) {
+                    let running = undefined!=resp.result.running && 1==parseInt(resp.result.running);
+                    if (undefined==analyseButton) {
+                        analyseButton = document.getElementById('analyser');
+                    }
+                    if (undefined!=analyseButton) {
+                        analyseButton.value = running ? "[% stop_analysis_text %]" : "[% start_analysis_text %]";
+                    }
+                }
+            });
+            if (++msgCount>5) {
+                msgCount = 0;
+                clearInterval(statusInterval);
+                statusInterval = setInterval(getStatus, 5000);
+            }
+        }
+    });
+</script>

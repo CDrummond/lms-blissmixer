@@ -27,37 +27,6 @@ my $analyser;
 
 sub rescan {
     main::DEBUGLOG && $log->is_debug && $log->debug('Analysing...');
-    if (!isScanning()) {
-        my $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
-        my $prefsDir = Slim::Utils::Prefs::dir() || Slim::Utils::OSDetect::dirsFor('prefs');
-        my @params = ();
-        push @params, "--db";
-        push @params, $prefsDir . "/bliss.db";
-        my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
-        my $numDirs = 0;
-        foreach my $dir (@$mediaDirs) {
-            if ($numDirs>0) {
-                push @params, "--music_${numDirs}";
-            } else {
-                push @params, "--music";
-            }
-            push @params, $dir;
-            $numDirs++;
-        }
-        push @params, "--threads";
-        push @params, "1111"; # 1111 => num cores -1
-        push @params, "--lms";
-        push @params, "127.0.0.1";
-        push @params, "--json";
-        push @params, $serverprefs->get('httpport');
-        push @params, "--logging";
-        push @params, "error";
-        push @params, "--ignore";
-        push @params, $prefsDir . "/bliss-ignore.txt";
-        push @params, "analyse-lms";
-        main::DEBUGLOG && $log->debug("Start analyser: $analyserBinary @params");
-        eval { $analyser = Proc::Background->new({ 'die_upon_destroy' => 1 }, $analyserBinary, @params); };
-    }
 }
 
 sub abortScan {
