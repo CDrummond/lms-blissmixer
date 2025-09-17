@@ -421,6 +421,7 @@ sub _startAnalyser {
 }
 
 sub _stopAnalyser {
+    main::DEBUGLOG && $log->debug("Stop analyser");
     if ($analyser && $analyser->alive) {
         $analyser->die;
     } else {
@@ -474,7 +475,8 @@ sub _cliCommand {
 
     if ($cmd eq 'analyser') {
         my $act = $request->getParam('act');
-        if (!$act) {
+        main::DEBUGLOG && $log->debug("Analyser act:${act}");
+        if ($act eq 'toggle') {
             if ($analyser && $analyser->alive) {
                 _stopAnalyser();
             } else {
@@ -492,6 +494,9 @@ sub _cliCommand {
             }
         } elsif ($act eq 'update') {
             $lastAnalyserMsg = $request->getParam('msg');
+        } else {
+            $request->setStatusBadParams();
+            return;
         }
         $request->setStatusDone();
         return;

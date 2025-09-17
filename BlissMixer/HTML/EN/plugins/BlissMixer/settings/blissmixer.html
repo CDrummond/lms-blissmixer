@@ -13,9 +13,11 @@
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_FILES" desc="BLISSMIXER_ANALYSE_FILES_DESC" %]
-          <input class="btn btn2" id="analyser" name="analyser" type="submit" class="stdclick" value="">
+        <input class="btn btn2" id="analyser" name="analyser" type="submit" class="stdclick" value="">
         [% END %]
-
+        [% WRAPPER settingGroup %]
+        <div id="analyser-status"></div>
+        [% END %]
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
         <b style="font-size:120%">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
         <div style="opacity:0.6">[% "BLISSMIXER_MIX_SETTINGS_NOTE" | string %]</div><br/>
@@ -102,7 +104,10 @@
     window.addEventListener("load",() => {
         let statusInterval = setInterval(getStatus, 1000);
         let analyseButton = undefined;
+        let analyseStatus = undefined;
         let msgCount = 0;
+        let intervalDuration = 1000;
+        let running = false;
 
         getStatus();
 
@@ -122,21 +127,34 @@
             }
 
             sendMsg().then((resp) => {
+                msgCount++;
                 if (undefined!=resp && undefined!=resp.result) {
-                    let running = undefined!=resp.result.running && 1==parseInt(resp.result.running);
+                    running = undefined!=resp.result.running && 1==parseInt(resp.result.running);
                     if (undefined==analyseButton) {
                         analyseButton = document.getElementById('analyser');
                     }
                     if (undefined!=analyseButton) {
                         analyseButton.value = running ? "[% stop_analysis_text %]" : "[% start_analysis_text %]";
                     }
+                    if (undefined==analyseStatus) {
+                        analyseStatus = document.getElementById('analyser-status');
+                    }
+                    if (undefined!=analyseStatus) {
+                        analyseStatus.innerHTML = running && undefined!=resp.result.msg ? resp.result.msg : "";
+                    }
+                }
+                if (running && intervalDuration>1000) {
+                    setStatusInterval(1000);
+                } else if (!running && intervalDuration<5000 && msgCount>5) {
+                    setStatusInterval(5000);
                 }
             });
-            if (++msgCount>5) {
-                msgCount = 0;
-                clearInterval(statusInterval);
-                statusInterval = setInterval(getStatus, 5000);
-            }
+        }
+
+        function setStatusInterval(v) {
+            intervalDuration = v;
+            clearInterval(statusInterval);
+            statusInterval = setInterval(getStatus, intervalDuration);
         }
     });
 </script>

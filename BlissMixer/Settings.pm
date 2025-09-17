@@ -51,7 +51,7 @@ sub beforeRender {
 sub handler {
     my ($class, $client, $paramRef) = @_;
     if ($paramRef->{'analyser'}) {
-        Slim::Control::Request::executeRequest( undef, [ 'blissmixer', 'analyser' ] );
+        Slim::Control::Request::executeRequest( undef, [ 'blissmixer', 'analyser', 'act:toggle' ] );
     }
     return $class->SUPER::handler($client, $paramRef);
 }
