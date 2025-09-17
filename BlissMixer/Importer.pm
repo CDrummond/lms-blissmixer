@@ -15,8 +15,6 @@ use Slim::Utils::Prefs;
 use Slim::Utils::Log;
 use Slim::Schema;
 
-use Plugins::BlissMixer::Analyser ':all';
-
 my $prefs = preferences('plugin.blissmixer');
 my $log = Slim::Utils::Log::logger('plugin.blissmixer');
 
