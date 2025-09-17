@@ -398,6 +398,7 @@ sub _startAnalyser {
     push @params, "127.0.0.1";
     push @params, "--json";
     push @params, $serverprefs->get('httpport');
+    push @params, "--notifs";
     push @params, "--logging";
     push @params, "error";
     push @params, "--ignore";
