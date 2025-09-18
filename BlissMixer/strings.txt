@@ -169,7 +169,7 @@ BLISSMIXER_ANALYSER
 	EN	Analyser
 
 BLISSMIXER_ANALYSER_NOTE
-	EN	Before you can use this mixer your music files need to be analysed. This can be performed automatically after each LMS scan, or you can manually initiate this using the 'Start analysis' button below. Please note, however, that this can take a long time to complete. If you are running on a low-power machine you can download the analyser separately and run on a more powerful machine (<a href="https://github.com/CDrummond/bliss-analyser/releases" target="_blank">releases</a>, <a href="https://raw.githubusercontent.com/CDrummond/bliss-analyser/refs/heads/master/UserGuide.md" target="_blank">user guide</a>)
+	EN	Before you can use this mixer your music files need to be analysed. This can be performed automatically after each LMS scan, or you can manually initiate this using the 'Start analysis' button below. Please note, however, that this can take a long time to complete. If you are running on a low-power machine you can download the analyser separately and run on a more powerful machine (<a href="https://github.com/CDrummond/bliss-analyser/releases" target="_blank">releases</a>, <a href="https://raw.githubusercontent.com/CDrummond/bliss-analyser/refs/heads/master/UserGuide.md" target="_blank">user guide</a>).<br/><br/>When an anlysis is runnnig you will see some progress information below the 'Start analysis' button. This will show the time ellapsed and the names of some files. Files will not be displayed in order, as the list of files to analyse is split into chunks and processed in parallel. This output, therefore, is only to indicate that <i>something</i> is happening.<br/><br/>
 
 BLISSMIXER_RUN_AFTER_SCAN
 	EN	Automatic analysis
