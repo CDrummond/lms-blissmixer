@@ -16,6 +16,7 @@ use Slim::Utils::Log;
 use Slim::Schema;
 
 my $prefs = preferences('plugin.blissmixer');
++my $serverprefs = preferences('server');
 my $log = Slim::Utils::Log::logger('plugin.blissmixer');
 
 sub initPlugin {
@@ -24,7 +25,7 @@ sub initPlugin {
 }
 
 sub toggleUseImporter {
-	if ($prefs->get('run_analyser_after_scan')) {
+	if ($prefs->get('run_analyser_after_scan') && !$serverprefs->get('authorize')) {
 		main::DEBUGLOG && $log->is_debug && $log->debug('Enabling analysis after scan');
 		Slim::Music::Import->addImporter('Plugins::BlissMixer::Importer', {
 			'type' => 'post',
@@ -39,7 +40,7 @@ sub toggleUseImporter {
 
 sub startScan {
 	my $class = shift;
-	if ($prefs->get('run_analyser_after_scan')) {
+	if ($prefs->get('run_analyser_after_scan') && !$serverprefs->get('authorize')) {
 		main::DEBUGLOG && $log->is_debug && $log->debug('Starting analysis');
 		Slim::Control::Request::executeRequest( undef, [ 'blissmixer', 'analyser', 'act:start' ] );
 	}

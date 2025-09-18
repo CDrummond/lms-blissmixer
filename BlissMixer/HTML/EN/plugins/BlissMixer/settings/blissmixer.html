@@ -3,6 +3,10 @@
     [% WRAPPER settingSection %]
 
         <b style="font-size:120%">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
+        [% IF server_auth %]
+        <div style="opacity:0.6">[% "BLISSMIXER_ANALYSER_NOT_SUPPORTED" | string %]</div><br/>
+        [% ELSE %]
+
         <div style="opacity:0.6">[% "BLISSMIXER_ANALYSER_NOTE" | string %]</div><br/>
 
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_TAGS" desc="BLISSMIXER_ANALYSE_TAGS_DESC" %]
@@ -18,6 +22,8 @@
         [% WRAPPER settingGroup %]
         <div id="analyser-status"></div>
         [% END %]
+        [% END %]
+
         <hr style="opacity:0.4" class="sub-sep"/><br/>
         <b style="font-size:120%">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
         <div style="opacity:0.6">[% "BLISSMIXER_MIX_SETTINGS_NOTE" | string %]</div><br/>
@@ -70,7 +76,7 @@
         <input type="checkbox" name="pref_use_track_genre" id="use_track_genre" [% IF prefs.use_track_genre %] checked [% END %] value="1"/>
         [% END %]
 
-        [% IF allowPortConfig %]
+        [% IF server_auth %]
             <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
             <div>[% "BLISSMIXER_PORT_NOTE" | string %]</div><br/>
             [% WRAPPER settingGroup title="BLISSMIXER_PORT" desc="BLISSMIXER_PORT_DESC" %]
