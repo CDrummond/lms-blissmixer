@@ -41,7 +41,7 @@ sub startScan {
 	my $class = shift;
 	if ($prefs->get('run_analyser_after_scan')) {
 		main::DEBUGLOG && $log->is_debug && $log->debug('Starting analysis');
-		#Slim::Control::Request::executeRequest( undef, [ 'blissmixer', 'analyser', 'act:start' ] );
+		Slim::Control::Request::executeRequest( undef, [ 'blissmixer', 'analyser', 'act:start' ] );
 	}
 	Slim::Music::Import->endImporter($class);
 }
