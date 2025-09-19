@@ -27,6 +27,7 @@ use Slim::Utils::OSDetect;
 use Slim::Utils::Strings qw(cstring);
 use Slim::Utils::Prefs;
 
+use Plugins::BlissMixer::Analyser;
 use Plugins::BlissMixer::Importer;
 use Plugins::BlissMixer::Settings;
 use Plugins::BlissMixer::ProtocolHandler;
@@ -54,25 +55,19 @@ my $dbPath = "";
 my $initialized = 0;
 # Current bliss-mixer process
 my $mixer;
-# Current bliss-analyser process
-my $analyser;
 # Port number mixer is running on
 my $mixerPort = 0;
-# Path to bliss-mixer, and bliss-analyser, that will be used on current system
+# Path to bliss-mixer that will be used on current system
 my $mixerBinary;
-my $analyserBinary;
 # store time when bliss-mixer was started. This is then checked in _startMixer
 # to ensure it is not attempted to be started again
 my $lastMixerStart = 0;
-
-# Last messaage received from analyser
-my $lastAnalyserMsg = "";
 
 my $lastWeights = "";
 
 sub shutdownPlugin {
     _stopMixer();
-    _stopAnalyser();
+    Plugins::BlissMixer::Analyser::stopAnalyser("SHUTDOWN");
     $initialized = 0;
 }
 
@@ -185,8 +180,6 @@ sub _initBinaries {
     }
     $mixerBinary = Slim::Utils::Misc::findbin('bliss-mixer');
     main::INFOLOG && $log->info("Mixer: ${mixerBinary}");
-    $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
-    main::INFOLOG && $log->info("Analyser: ${analyserBinary}");
 
     # All binaries take just over 100Mb! So, remove any binaries
     # that are for other OSs.
@@ -197,13 +190,7 @@ sub _initBinaries {
             unlink($bin);
         }
     }
-    my @analysers = glob("${bindir}/*/bliss-analyser*");
-    foreach my $bin (@analysers) {
-        if ($bin ne $analyserBinary) {
-            main::INFOLOG && $log->info("Removing analyser binary for other OS: ${bin}");
-            unlink($bin);
-        }
-    }
+    Plugins::BlissMixer::Analyser::initBinary();
 }
 
 sub _resetMixerTimeout {
@@ -363,72 +350,6 @@ sub _startMixer {
     return 1;
 }
 
-sub _startAnalyser {
-    if ($analyser && $analyser->alive) {
-        main::DEBUGLOG && $log->debug("$analyserBinary already running");
-    }
-    if (!$analyserBinary) {
-        $log->warn("No analyser binary");
-        return 0;
-    }
-
-    $lastAnalyserMsg = "";
-    my $prefsDir = Slim::Utils::Prefs::dir() || Slim::Utils::OSDetect::dirsFor('prefs');
-    my @params = ();
-    push @params, "--db";
-    push @params, $prefsDir . "/bliss.db";
-    my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
-    my $numDirs = 0;
-    foreach my $dir (@$mediaDirs) {
-        if ($numDirs>0) {
-            push @params, "--music_${numDirs}";
-        } else {
-            push @params, "--music";
-        }
-        push @params, $dir;
-        $numDirs++;
-    }
-    if ( $prefs->get('analysis_tags')) {
-        push @params, "--tags";
-        push @params, "--preserve";
-    }
-    push @params, "--threads";
-    push @params, "1111"; # 1111 => num cores -1
-    push @params, "--lms";
-    push @params, "127.0.0.1";
-    push @params, "--json";
-    push @params, $serverprefs->get('httpport');
-    push @params, "--notifs";
-    push @params, "--logging";
-    push @params, "error";
-    push @params, "--ignore";
-    push @params, $prefsDir . "/bliss-ignore.txt";
-    push @params, "analyse-lms";
-    main::DEBUGLOG && $log->debug("Start analyser: $analyserBinary @params");
-    eval { $analyser = Proc::Background->new({ 'die_upon_destroy' => 1 }, $analyserBinary, @params); };
-
-    if ($@) {
-        $log->warn($@);
-    } else {
-        Slim::Utils::Timers::setTimer(undef, Time::HiRes::time() + 1, sub {
-            if ($analyser && $analyser->alive) {
-                main::DEBUGLOG && $log->debug("$analyserBinary running");
-            } else {
-                main::DEBUGLOG && $log->debug("$analyserBinary NOT running");
-            }
-        });
-    }
-}
-
-sub _stopAnalyser {
-    main::DEBUGLOG && $log->debug("Stop analyser");
-    if ($analyser && $analyser->alive) {
-        $analyser->die;
-    } else {
-        main::DEBUGLOG && $log->debug("$analyserBinary not running");
-    }
-}
-
 sub _cliCommand {
     my $request = shift;
 
@@ -474,37 +395,7 @@ sub _cliCommand {
     }
 
     if ($cmd eq 'analyser') {
-        my $act = $request->getParam('act');
-        main::DEBUGLOG && $log->debug("Analyser act:${act}");
-        if ($act eq 'toggle') {
-            if ($analyser && $analyser->alive) {
-                _stopAnalyser();
-            } else {
-                _startAnalyser();
-            }
-        } elsif ($act eq 'start') {
-             _startAnalyser();
-        } elsif ($act eq 'stop') {
-             _stopAnalyser();
-        } elsif ($act eq 'status') {
-            my $running = $analyser && $analyser->alive ? 1 : 0;
-            $request->addResult("running", $running);
-            if ($running) {
-                $request->addResult("msg", $lastAnalyserMsg);
-            }
-        } elsif ($act eq 'update') {
-            $lastAnalyserMsg = $request->getParam('msg');
-        } else {
-            $request->setStatusBadParams();
-            return;
-        }
-        $request->setStatusDone();
-        return;
-    }
-
-    if ($cmd eq 'stop-analyser') {
-        _stopAnalyser();
-        $request->setStatusDone();
+        Plugins::BlissMixer::Analyser::cliCommand($request);
         return;
     }
 
