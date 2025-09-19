@@ -18,12 +18,26 @@ my $prefs = preferences('plugin.blissmixer');
 my $serverprefs = preferences('server');
 my $log = logger('plugin.blissmixer');
 
+# Only auto restart analyser if it was running for over X minutes
+# and stopped before sending FINISHED
+use constant MIN_ANALYSER_RUN_TIME => 5 * 60;
+
+# How often to check anayser
+use constant CHECK_ANALYSER_TIME => 60;
+
+# Message sent by analyser when it has successfully finished
+use constant ANALYSER_FINISHED_MSG => "FINISHED";
+
 # Current bliss-analyser process
 my $analyser;
 # Path to  liss-analyser that will be used on current system
 my $analyserBinary;
 # Last messaage received from analyser
 my $lastAnalyserMsg = "";
+# Last time analyser was started
+my $lastAnalyserStart = 0;
+# Time check timer was last stated - so that we dont restart too often
+my $lastAnalyserCheckTimerStart = 0;
 
 sub initBinary {
     my $bindir = shift;
@@ -50,7 +64,7 @@ sub initBinary {
 sub cliCommand {
     my $request = shift;
     my $act = $request->getParam('act');
-    main::DEBUGLOG && $log->debug("Analyser act:${act}");
+    #main::DEBUGLOG && $log->debug("Analyser act:${act}");
     if ($act eq 'toggle') {
         if ($analyser && $analyser->alive) {
             stopAnalyser("CLI");
@@ -62,18 +76,43 @@ sub cliCommand {
     } elsif ($act eq 'stop') {
          stopAnalyser("CLI");
     } elsif ($act eq 'status') {
-        my $running = $analyser && $analyser->alive ? 1 : 0;
+        my $running = _checkAnalyser();
         $request->addResult("running", $running);
         if ($running) {
             $request->addResult("msg", $lastAnalyserMsg);
         }
     } elsif ($act eq 'update') {
         $lastAnalyserMsg = $request->getParam('msg');
+        if ($lastAnalyserMsg eq ANALYSER_FINISHED_MSG) {
+            main::DEBUGLOG && $log->debug("Analysis finished successfully");
+        }
     } else {
         $request->setStatusBadParams();
         return;
     }
     $request->setStatusDone();
+}
+
+sub _startAnalyserCheckTimer {
+    $lastAnalyserCheckTimerStart = Time::HiRes::time();
+    main::DEBUGLOG && $log->debug("Start analyser check timer");
+    Slim::Utils::Timers::killTimers(undef, \&_checkAnalyser);
+    Slim::Utils::Timers::setTimer(undef, $lastAnalyserCheckTimerStart + CHECK_ANALYSER_TIME, \&_checkAnalyser);
+}
+
+sub _checkAnalyser {
+    my $running = $analyser && $analyser->alive ? 1 : 0;
+    my $now = Time::HiRes::time();
+    main::DEBUGLOG && $log->debug("Check status");
+    if ($running) {
+        if ($lastAnalyserCheckTimerStart<=0 || $now-$lastAnalyserCheckTimerStart>=(CHECK_ANALYSER_TIME-10)) {
+            _startAnalyserCheckTimer();
+        }
+    } elsif ($lastAnalyserStart>0 && $lastAnalyserMsg ne ANALYSER_FINISHED_MSG && $now-$lastAnalyserStart>MIN_ANALYSER_RUN_TIME) {
+        main::DEBUGLOG && $log->debug("Restart due to not running and " . ANALYSER_FINISHED_MSG . " not received");
+        startAnalyser();
+    }
+    return $running;
 }
 
 sub startAnalyser {
@@ -131,11 +170,15 @@ sub startAnalyser {
             }
         });
     }
+    $lastAnalyserStart = Time::HiRes::time();
+    _startAnalyserCheckTimer();
 }
 
 sub stopAnalyser {
     my $why = shift;
     main::DEBUGLOG && $log->debug("Stop analyser (${why})");
+    Slim::Utils::Timers::killTimers(undef, \&_checkAnalyser);
+    $lastAnalyserStart = 0;
     if ($analyser && $analyser->alive) {
         $analyser->die;
     } else {
