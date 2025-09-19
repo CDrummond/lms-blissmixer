@@ -20,7 +20,7 @@ my $log = logger('plugin.blissmixer');
 
 # Only auto restart analyser if it was running for over X minutes
 # and stopped before sending FINISHED
-use constant MIN_ANALYSER_RUN_TIME => 5 * 60;
+use constant MIN_ANALYSER_RUN_TIME => 1 * 60;
 
 # How often to check anayser
 use constant CHECK_ANALYSER_TIME => 60;
