@@ -46,6 +46,7 @@ sub beforeRender {
     $paramRef->{'jsonrpc_url'} = "http://${host}/jsonrpc.js";
     $paramRef->{'start_analysis_text'} = string('BLISSMIXER_ANALYSE_START_BUTTON');
     $paramRef->{'stop_analysis_text'} = string('BLISSMIXER_ANALYSE_ABORT_BUTTON');
+    $paramRef->{'analysed_tracks_text'} = string('BLISSMIXER_ANALYSED_TRACKS');
 }
 
 sub handler {

@@ -25,8 +25,13 @@ use constant MIN_ANALYSER_RUN_TIME => 5 * 60;
 # How often to check anayser
 use constant CHECK_ANALYSER_TIME => 60;
 
+# How often to check track count in DB
+use constant DB_TRACK_COUNT_TIME => 15;
+
 # Message sent by analyser when it has successfully finished
 use constant ANALYSER_FINISHED_MSG => "FINISHED";
+
+use constant DB_NAME  => "bliss.db";
 
 # Current bliss-analyser process
 my $analyser;
@@ -39,14 +44,13 @@ my $lastAnalyserStart = 0;
 # Time check timer was last stated - so that we dont restart too often
 my $lastAnalyserCheckTimerStart = 0;
 
-sub initBinary {
-    my $bindir = shift;
-    if (main::ISWINDOWS) {
-        Slim::Utils::Misc::addFindBinPaths(catdir($bindir, 'windows'));
-    } elsif (main::ISMAC) {
-        Slim::Utils::Misc::addFindBinPaths(catdir($bindir, 'mac'));
-    }
+my $dbPath;
+my $lastTracksInDbCountTime = 0;
+my $tracksInDb = 0;
 
+sub init {
+    my $bindir = shift;
+    $dbPath = shift;
     $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
     main::INFOLOG && $log->info("Analyser: ${analyserBinary}");
 
@@ -77,6 +81,7 @@ sub cliCommand {
          stopAnalyser("CLI");
     } elsif ($act eq 'status') {
         my $running = _checkAnalyser();
+        $request->addResult("count", _countTracksInDb());
         $request->addResult("running", $running);
         if ($running) {
             $request->addResult("msg", $lastAnalyserMsg);
@@ -91,6 +96,27 @@ sub cliCommand {
         return;
     }
     $request->setStatusDone();
+}
+
+sub _countTracksInDb {
+    my $now = Time::HiRes::time();
+    if (-e $dbPath) {
+        if (0==$lastTracksInDbCountTime || Time::HiRes::time()-$lastTracksInDbCountTime>=DB_TRACK_COUNT_TIME) {
+            eval {
+                main::DEBUGLOG && $log->debug("Count tracks in ${dbPath}");
+                my $dbh = DBI->connect( "dbi:SQLite:dbname=${dbPath}", '', '', { RaiseError => 0 });
+                my $sth = $dbh->prepare( "SELECT COUNT(1) FROM TracksV2" );
+                $sth->execute();
+                $tracksInDb = $sth->fetchrow_array();
+                $sth->finish();
+                $dbh->disconnect();
+                $lastTracksInDbCountTime = $now;
+            }
+        }
+    } else {
+        $tracksInDb = 0;
+    }
+    return $tracksInDb;
 }
 
 sub _startAnalyserCheckTimer {

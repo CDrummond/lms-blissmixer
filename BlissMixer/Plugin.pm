@@ -140,14 +140,14 @@ sub initPlugin {
         blissmixer => 'Plugins::BlissMixer::ProtocolHandler'
     );
 
-    _initBinaries();
-
     my $dbDir = Slim::Utils::Prefs::dir() || Slim::Utils::OSDetect::dirsFor('prefs');
     my $prevDbPath = $serverprefs->get('cachedir') . "/" . DB_NAME;
     $dbPath = $dbDir . "/" . DB_NAME;
     if ((-e $prevDbPath) && (! -e $dbPath)) {
         move($prevDbPath, $dbPath);
     }
+
+    _initBinaries();
 
     $initialized = 1;
     return $initialized;
@@ -190,7 +190,7 @@ sub _initBinaries {
             unlink($bin);
         }
     }
-    Plugins::BlissMixer::Analyser::initBinary();
+    Plugins::BlissMixer::Analyser::init($bindir, $dbPath);
 }
 
 sub _resetMixerTimeout {
