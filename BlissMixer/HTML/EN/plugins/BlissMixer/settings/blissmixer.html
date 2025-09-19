@@ -17,7 +17,7 @@
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_FILES" desc="BLISSMIXER_ANALYSE_FILES_DESC" %]
-        <input class="btn btn2" id="analyser" name="analyser" type="submit" class="stdclick" value="">
+        <button id="analyser" onclick="toggleBlissAnalyser()" type="button"></button>
         [% END %]
         [% WRAPPER settingGroup %]
         <div id="analyser-status"></div>
@@ -107,60 +107,67 @@
 [% PROCESS settings/footer.html %]
 
 <script type="text/javascript">
-    window.addEventListener("load",() => {
-        let statusInterval = setInterval(getStatus, 1000);
-        let analyseButton = undefined;
-        let analyseStatus = undefined;
-        let msgCount = 0;
-        let intervalDuration = 1000;
-        let running = false;
+    let statusInterval = undefined;
+    let analyseButton = undefined;
+    let analyseStatus = undefined;
+    let analyserStatusMsgCount = 0;
+    let intervalDuration = 1000;
+    let analyserIsRunning = false;
 
-        getStatus();
+    async function sendMsgToMixerPlugin(act) {
+        const serverjsonurl = "[% jsonrpc_url %]";
+        const msg = JSON.stringify({id: 1, method: 'slim.request', params: ['', ['blissmixer', 'analyser', 'act:'+act]]});
+        let response = await fetch(serverjsonurl, {
+            method: "post",
+            headers: { "Content-Type": "application/json", "Origin": window.location.hostname },
+            body: msg
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    }
 
-        function getStatus() {
-            async function sendMsg() {
-                const serverjsonurl = "[% jsonrpc_url %]";
-                const msg = JSON.stringify({id: 1, method: 'slim.request', params: ['', ['blissmixer', 'analyser', 'act:status']]});
-                let response = await fetch(serverjsonurl, {
-                    method: "post",
-                    headers: { "Content-Type": "application/json", "Origin": window.location.hostname },
-                    body: msg
-                });
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+    function toggleBlissAnalyser() {
+        sendMsgToMixerPlugin('toggle').then((resp) => {
+            getAnalyserStatus();
+        });
+    }
+
+    function getAnalyserStatus() {
+        sendMsgToMixerPlugin('status').then((resp) => {
+            analyserStatusMsgCount++;
+            if (undefined!=resp && undefined!=resp.result) {
+                analyserIsRunning = undefined!=resp.result.running && 1==parseInt(resp.result.running);
+                if (undefined==analyseButton) {
+                    analyseButton = document.getElementById('analyser');
                 }
-                return await response.json();
+                if (undefined!=analyseButton) {
+                    analyseButton.innerHTML = analyserIsRunning ? "[% stop_analysis_text %]" : "[% start_analysis_text %]";
+                }
+                if (undefined==analyseStatus) {
+                    analyseStatus = document.getElementById('analyser-status');
+                }
+                if (undefined!=analyseStatus) {
+                    analyseStatus.innerHTML = analyserIsRunning && undefined!=resp.result.msg ? resp.result.msg : "";
+                }
             }
+            if (analyserIsRunning && intervalDuration>1000) {
+                setAnalyserStatusInterval(1000);
+            } else if (!analyserIsRunning && intervalDuration<5000 && analyserStatusMsgCount>5) {
+                setAnalyserStatusInterval(5000);
+            }
+        });
+    }
 
-            sendMsg().then((resp) => {
-                msgCount++;
-                if (undefined!=resp && undefined!=resp.result) {
-                    running = undefined!=resp.result.running && 1==parseInt(resp.result.running);
-                    if (undefined==analyseButton) {
-                        analyseButton = document.getElementById('analyser');
-                    }
-                    if (undefined!=analyseButton) {
-                        analyseButton.value = running ? "[% stop_analysis_text %]" : "[% start_analysis_text %]";
-                    }
-                    if (undefined==analyseStatus) {
-                        analyseStatus = document.getElementById('analyser-status');
-                    }
-                    if (undefined!=analyseStatus) {
-                        analyseStatus.innerHTML = running && undefined!=resp.result.msg ? resp.result.msg : "";
-                    }
-                }
-                if (running && intervalDuration>1000) {
-                    setStatusInterval(1000);
-                } else if (!running && intervalDuration<5000 && msgCount>5) {
-                    setStatusInterval(5000);
-                }
-            });
-        }
+    function setAnalyserStatusInterval(v) {
+        intervalDuration = v;
+        clearInterval(statusInterval);
+        statusInterval = setInterval(getAnalyserStatus, intervalDuration);
+    }
 
-        function setStatusInterval(v) {
-            intervalDuration = v;
-            clearInterval(statusInterval);
-            statusInterval = setInterval(getStatus, intervalDuration);
-        }
+    window.addEventListener("load",() => {
+        statusInterval = setInterval(getAnalyserStatus, 1000);
+        getAnalyserStatus();
     });
 </script>
