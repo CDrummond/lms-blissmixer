@@ -193,7 +193,7 @@ BLISSMIXER_ANALYSE_READ_TAGS
 	EN	Read results from files
 
 BLISSMIXER_ANALYSE_READ_TAGS_DESC
-	EN	BEfore analysing tracks check to see if analysis results have been stored within the files themselves.
+	EN	When analysing tracks first check to see if analysis results have been stored within the files themselves.
 
 BLISSMIXER_ANALYSE_WRITE_TAGS
 	EN	Store results in files
