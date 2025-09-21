@@ -41,12 +41,14 @@ sub prefs {
 
 sub beforeRender {
     my ($class, $paramRef) = @_;
-    $paramRef->{server_auth} = $serverprefs->get('authorize');
+    $paramRef->{'server_auth'} = $serverprefs->get('authorize');
     my $host = $paramRef->{host} || (Slim::Utils::Network::serverAddr() . ':' . $serverprefs->get('httpport'));
     $paramRef->{'jsonrpc_url'} = "http://${host}/jsonrpc.js";
     $paramRef->{'start_analysis_text'} = string('BLISSMIXER_ANALYSE_START_BUTTON');
     $paramRef->{'stop_analysis_text'} = string('BLISSMIXER_ANALYSE_ABORT_BUTTON');
     $paramRef->{'analysed_tracks_text'} = string('BLISSMIXER_ANALYSED_TRACKS');
+    my $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
+    $paramRef->{'no_analyser_binary'} = !$analyserBinary;
 }
 
 sub handler {

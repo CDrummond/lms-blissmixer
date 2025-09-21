@@ -3,8 +3,12 @@
     [% WRAPPER settingSection %]
 
         <b style="font-size:120%">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
-        [% IF server_auth %]
-        <div style="opacity:0.6">[% "BLISSMIXER_ANALYSER_NOT_SUPPORTED" | string %]</div><br/>
+        [% IF server_auth || no_analyser_binary %]
+          [% IF no_analyser_binary %]
+          <div>[% "BLISSMIXER_ANALYSER_NOT_FOUND" | string %]</div><br/>
+          [% ELSE %]
+          <div>[% "BLISSMIXER_ANALYSER_AUTH_NOT_SUPPORTED" | string %]</div><br/>
+          [% END %]
         [% ELSE %]
 
         <div style="opacity:0.6">[% "BLISSMIXER_ANALYSER_NOTE" | string %]</div><br/>
