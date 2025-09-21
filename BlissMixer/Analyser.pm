@@ -166,8 +166,11 @@ sub startAnalyser {
         push @params, $dir;
         $numDirs++;
     }
-    if ( $prefs->get('analysis_tags')) {
-        push @params, "--tags";
+    if ( $prefs->get('analysis_read_tags')) {
+        push @params, "--readtags";
+    }
+    if ( $prefs->get('analysis_write_tags')) {
+        push @params, "--writetags";
         push @params, "--preserve";
     }
     push @params, "--threads";

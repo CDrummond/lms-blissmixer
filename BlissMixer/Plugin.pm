@@ -95,7 +95,8 @@ sub initPlugin {
         max_bpm_diff     => 0,
         use_track_genre  => 0,
         run_analyser_after_scan => 0,
-        analysis_tags    => 0
+        analysis_read_tags => 0,
+        analysis_write_tags => 0
     });
 
     $prefs->setChange(\&Plugins::BlissMixer::Importer::toggleUseImporter, 'run_analyser_after_scan');

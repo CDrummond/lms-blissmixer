@@ -13,8 +13,11 @@
 
         <div style="opacity:0.6">[% "BLISSMIXER_ANALYSER_NOTE" | string %]</div><br/>
 
-        [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_TAGS" desc="BLISSMIXER_ANALYSE_TAGS_DESC" %]
-        <input type="checkbox" name="pref_analysis_tags" id="analysis_tags" [% IF prefs.analysis_tags %] checked [% END %] value="1"/>
+        [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_READ_TAGS" desc="BLISSMIXER_ANALYSE_READ_TAGS_DESC" %]
+        <input type="checkbox" name="pref_analysis_read_tags" id="analysis_read_tags" [% IF prefs.analysis_read_tags %] checked [% END %] value="1"/>
+        [% END %]
+        [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_WRITE_TAGS" desc="BLISSMIXER_ANALYSE_WRITE_TAGS_DESC" %]
+        <input type="checkbox" name="pref_analysis_write_tags" id="analysis_write_tags" [% IF prefs.analysis_write_tags %] checked [% END %] value="1"/>
         [% END %]
         [% WRAPPER settingGroup title="BLISSMIXER_RUN_AFTER_SCAN" desc="BLISSMIXER_RUN_AFTER_SCAN_DESC" %]
         <input type="checkbox" name="pref_run_analyser_after_scan" id="run_analyser_after_scan" [% IF prefs.run_analyser_after_scan %] checked [% END %] value="1"/>
