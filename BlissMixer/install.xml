@@ -7,6 +7,7 @@
 	<module>Plugins::BlissMixer::Plugin</module>
 	<importmodule>Plugins::BlissMixer::Importer</importmodule>
 	<version>0.6.0</version>
+	<target>unux</target>
 	<description>BLISSMIXER_DESC</description>
 	<creator>Craig Drummond</creator>
 	<defaultState>

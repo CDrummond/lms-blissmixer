@@ -3,21 +3,23 @@
 #
 # LMS-BlissMixer
 #
-# Copyright (c) 2022-2023 Craig Drummond <craig.p.drummond@gmail.com>
+# Copyright (c) 2022-2025 Craig Drummond <craig.p.drummond@gmail.com>
 # MIT license.
 #
 
-import hashlib
-import os
-import re
-import requests
-import shutil
-import sys
+import hashlib, os, re, requests, shutil, sys
 
 
 REPO_XML = "repo.xml"
 PLUGIN_NAME = "BlissMixer"
 PLUGIN_GIT_NAME = "lms-blissmixer"
+
+TARGETS = { 'linux':   'unux',
+            'windows': 'windows',
+            'mac':     'mac' }
+MOVE_FOLDERS = {'linux':   ['mac', 'windows'],
+                'windows': ['aarch64-linux', 'armhf-linux', 'x86_64-linux', 'mac'],
+                'mac':     ['aarch64-linux', 'armhf-linux', 'x86_64-linux', 'windows']}
 
 def info(s):
     print("INFO: %s" %s)
@@ -43,12 +45,12 @@ def checkVersion(version):
         error("Invalid version number")
 
 
-def releaseUrl(version):
-    return "https://github.com/CDrummond/%s/releases/download/%s/%s-%s.zip" % (PLUGIN_GIT_NAME, version, PLUGIN_GIT_NAME, version)
+def releaseUrl(version, osname):
+    return "https://github.com/CDrummond/%s/releases/download/%s/%s-%s-%s.zip" % (PLUGIN_GIT_NAME, version, PLUGIN_GIT_NAME, osname, version)
 
 
-def checkVersionExists(version):
-    url = releaseUrl(version)
+def checkVersionExists(version, osname):
+    url = releaseUrl(version, osname)
     info("Checking %s" % url)
     request = requests.head(url)
     if request.status_code == 200 or request.status_code == 302:
@@ -65,30 +67,40 @@ def updateLine(line, startStr, endStr, updateStr):
     return None
 
 
-def updateInstallXml(version):
+def updateInstallXml(version, osname):
     lines=[]
     updated=False
     installXml = "%s/install.xml" % PLUGIN_NAME
     info("Updating %s" % installXml)
     with open(installXml, "r") as f:
         lines=f.readlines()
-    for i in range(len(lines)):
-        updated = updateLine(lines[i], "<version>", "</version>", version)
-        if updated:
-            lines[i]=updated
-            updated=True
-            break
-    if not updated:
-        error("Failed to update version in %s" % installXml)
+    toUpdate = {'version': version, 'target': TARGETS[osname]}
+    for t in toUpdate:
+        for i in range(len(lines)):
+            updated = updateLine(lines[i], "<%s>" % t, "</%s>" % t, toUpdate[t])
+            if updated:
+                lines[i]=updated
+                updated=True
+                break
+        if not updated:
+            error("Failed to update %s in %s" % (t, installXml))
     with open(installXml, "w") as f:
         for line in lines:
             f.write(line)
 
         
-def createZip(version):
-    info("Creating ZIP")
-    zipFile="%s-%s" % (PLUGIN_GIT_NAME, version)
+def createZip(version, osname):
+    info("Creating %s ZIP" % osname)
+    zipFile="%s-%s-%s" % (PLUGIN_GIT_NAME, osname ,version)
+    for f in MOVE_FOLDERS[osname]:
+        src='%s/Bin/%s' % (PLUGIN_NAME, f)
+        dest=f
+        shutil.move(src, dest)
     shutil.make_archive(zipFile, 'zip', PLUGIN_NAME)
+    for f in MOVE_FOLDERS[osname]:
+        dest='%s/Bin/%s' % (PLUGIN_NAME, f)
+        src=f
+        shutil.move(src, dest)
     zipFile+=".zip"
     return zipFile
 
@@ -105,12 +117,12 @@ def getSha1Sum(zipFile):
     return sha1.hexdigest()
 
 
-def updateRepoXml(repo, version, zipFile, sha1, pluginName=None):
+def updateRepoXml(repo, version, zipFile, sha1, osname, pluginName=None):
     lines=[]
     updatedVersion=False
     updatedUrl=False
     updatedSha=False
-    info("Updating %s" % repo)
+    info("Updating %s (%s)" % (repo, osname))
     inSection = pluginName is None
     with open(repo, "r") as f:
         lines=f.readlines()
@@ -122,7 +134,7 @@ def updateRepoXml(repo, version, zipFile, sha1, pluginName=None):
             if updated:
                 lines[i]=updated
                 updatedVersion=True
-            updated = updateLine(lines[i], '<url>', '</url>', releaseUrl(version))
+            updated = updateLine(lines[i], '<url>', '</url>', releaseUrl(version, osname))
             if updated:
                 lines[i]=updated
                 updatedUrl=True
@@ -151,11 +163,15 @@ if 1==len(sys.argv):
 version=sys.argv[1]
 if version!="test":
     checkVersion(version)
-    checkVersionExists(version)
-    updateInstallXml(version)
 
-zipFile = createZip(version)
-sha1 = getSha1Sum(zipFile)
-if version!="test" and os.path.exists(REPO_XML):
-    updateRepoXml(REPO_XML, version, zipFile, sha1, PLUGIN_NAME)
+for osname in ['Mac', 'Windows', 'Linux']:
+    osnamel = osname.lower()
+    if version!="test":
+        checkVersionExists(version, osnamel)
+        updateInstallXml(version, osnamel)
+
+    zipFile = createZip(version, osnamel)
+    sha1 = getSha1Sum(zipFile)
+    if version!="test" and os.path.exists(REPO_XML):
+        updateRepoXml(REPO_XML, version, zipFile, sha1, osnamel, PLUGIN_NAME+" ("+osname+")")
 
