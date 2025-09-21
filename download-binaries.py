@@ -17,10 +17,21 @@ MIXER_GITHUB_ARTIFACTS = {"bliss-mixer-linux-x86": {"bliss-mixer": "x86_64-linux
                           "bliss-mixer-mac":       {"bliss-mixer": "mac/bliss-mixer"},
                           "bliss-mixer-windows":   {"bliss-mixer.exe": "windows/bliss-mixer.exe"}}
 ANALYSER_GITHUB_REPO = "CDrummond/bliss-analyser"
-ANALYSER_GITHUB_ARTIFACTS = {"bliss-analyser-linux-x86": {"bliss-analyser": "x86_64-linux/bliss-analyser"},
-                             "bliss-analyser-linux-arm": {"bin/bliss-analyser-armhf": "armhf-linux/bliss-analyser", "bin/bliss-analyser-aarch64": "aarch64-linux/bliss-analyser"},
-                             "bliss-analyser-mac":       {"bliss-analyser": "mac/bliss-analyser"},
-                             "bliss-analyser-windows":   {"bliss-analyser.exe": "windows/bliss-analyser.exe"}}
+ANALYSER_GITHUB_ARTIFACTS = {"bliss-analyser-linux-x86-ffmpeg": {"bliss-analyser": "x86_64-linux/bliss-analyser"},
+                             "bliss-analyser-linux-arm-ffmpeg": {"bin/bliss-analyser-armhf": "armhf-linux/bliss-analyser", "bin/bliss-analyser-aarch64": "aarch64-linux/bliss-analyser"},
+                             "bliss-analyser-mac-symphonia":    {"bliss-analyser": "mac/bliss-analyser"},
+                             "bliss-analyser-windows-ffmpeg": {
+                                "bliss-analyser.exe": "windows/bliss-analyser.exe",
+                                "avcodec-61.dll": "windows/avcodec-61.dll",
+                                "avdevice-61.dll": "windows/avdevice-61.dll",
+                                "avfilter-10.dll": "windows/avfilter-10.dll",
+                                "avformat-61.dll": "windows/avformat-61.dll",
+                                "avutil-59.dll": "windows/avutil-59.dll",
+                                "postproc-58.dll": "windows/postproc-58.dll",
+                                "swresample-5.dll": "windows/swresample-5.dll",
+                                "swscale-8.dll": "windows/swscale-8.dll",
+                                "vcruntime140.dll": "windows/vcruntime140.dll"
+                             }}
 
 
 def info(s):
