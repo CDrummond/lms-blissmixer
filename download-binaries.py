@@ -18,7 +18,7 @@ MIXER_GITHUB_ARTIFACTS = {"bliss-mixer-linux-x86": {"bliss-mixer": "x86_64-linux
                           "bliss-mixer-windows":   {"bliss-mixer.exe": "windows/bliss-mixer.exe"}}
 ANALYSER_GITHUB_REPO = "CDrummond/bliss-analyser"
 ANALYSER_GITHUB_ARTIFACTS = {"bliss-analyser-linux-x86-ffmpeg": {"bliss-analyser": "x86_64-linux/bliss-analyser"},
-                             "bliss-analyser-linux-arm-ffmpeg": {"bin/bliss-analyser-armhf": "armhf-linux/bliss-analyser", "bin/bliss-analyser-aarch64": "aarch64-linux/bliss-analyser"},
+                             "bliss-analyser-linux-arm-ffmpeg": {"bin/bliss-analyser-aarch64": "aarch64-linux/bliss-analyser"},
                              "bliss-analyser-mac-symphonia":    {"bliss-analyser": "mac/bliss-analyser"},
                              "bliss-analyser-windows-ffmpeg": {
                                 "bliss-analyser.exe": "windows/bliss-analyser.exe",
