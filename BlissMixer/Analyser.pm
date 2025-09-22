@@ -50,20 +50,9 @@ my $tracksInDb = 0;
 my $trackFailuresInDb = 0;
 
 sub init {
-    my $bindir = shift;
     $dbPath = shift;
     $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
     main::INFOLOG && $log->info("Analyser: ${analyserBinary}");
-
-    # All binaries take just over 100Mb! So, remove any binaries
-    # that are for other OSs.
-    my @analysers = glob("${bindir}/*/bliss-analyser*");
-    foreach my $bin (@analysers) {
-        if ($bin ne $analyserBinary) {
-            main::INFOLOG && $log->info("Removing analyser binary for other OS: ${bin}");
-            unlink($bin);
-        }
-    }
 }
 
 sub cliCommand {

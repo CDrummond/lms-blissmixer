@@ -172,26 +172,10 @@ sub postinitPlugin {
 }
 
 sub _initBinaries {
-    my $dir = dirname(__FILE__);
-    my $bindir = catdir($dir, 'Bin');
-    if (main::ISWINDOWS) {
-        Slim::Utils::Misc::addFindBinPaths(catdir($bindir, 'windows'));
-    } elsif (main::ISMAC) {
-        Slim::Utils::Misc::addFindBinPaths(catdir($bindir, 'mac'));
-    }
     $mixerBinary = Slim::Utils::Misc::findbin('bliss-mixer');
     main::INFOLOG && $log->info("Mixer: ${mixerBinary}");
 
-    # All binaries take just over 100Mb! So, remove any binaries
-    # that are for other OSs.
-    my @mixers = glob("${bindir}/*/bliss-mixer*");
-    foreach my $bin (@mixers) {
-        if ($bin ne $mixerBinary) {
-            main::INFOLOG && $log->info("Removing mixer mixer for other OS: ${bin}");
-            unlink($bin);
-        }
-    }
-    Plugins::BlissMixer::Analyser::init($bindir, $dbPath);
+    Plugins::BlissMixer::Analyser::init($dbPath);
 }
 
 sub _resetMixerTimeout {
