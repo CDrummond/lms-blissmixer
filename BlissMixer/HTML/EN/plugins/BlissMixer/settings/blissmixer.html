@@ -165,7 +165,12 @@
                 }
                 if (undefined!=analysedCount) {
                     let count = undefined!=resp.result.count ? parseInt(resp.result.count) : 0;
-                    analysedCount.innerHTML = "[% analysed_tracks_text %]".replace("%1", count);
+                    let failed = undefined!=resp.result.failed ? parseInt(resp.result.failed) : 0;
+                    let status = "[% analysed_tracks_text %]".replace("%1", count);
+                    if (failed>0) {
+                        status += " - " + "[% failed_tracks_text %]".replace("%1", failed);
+                    }
+                    analysedCount.innerHTML = status;
                 }
             }
             if (analyserIsRunning && intervalDuration>1000) {

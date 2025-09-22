@@ -18,9 +18,9 @@ my $prefs = preferences('plugin.blissmixer');
 my $serverprefs = preferences('server');
 my $log = logger('plugin.blissmixer');
 
-# Only auto restart analyser if it was running for over X minutes
+# Only auto restart analyser if it was running for over X seconds
 # and stopped before sending FINISHED
-use constant MIN_ANALYSER_RUN_TIME => 1 * 60;
+use constant MIN_ANALYSER_RUN_TIME => 15;
 
 # How often to check anayser
 use constant CHECK_ANALYSER_TIME => 60;
@@ -47,6 +47,7 @@ my $lastAnalyserCheckTimerStart = 0;
 my $dbPath;
 my $lastTracksInDbCountTime = 0;
 my $tracksInDb = 0;
+my $trackFailuresInDb = 0;
 
 sub init {
     my $bindir = shift;
@@ -81,7 +82,9 @@ sub cliCommand {
          stopAnalyser("CLI");
     } elsif ($act eq 'status') {
         my $running = _checkAnalyser();
-        $request->addResult("count", _countTracksInDb());
+        _countTracksInDb();
+        $request->addResult("count", $tracksInDb);
+        $request->addResult("failed", $trackFailuresInDb);
         $request->addResult("running", $running);
         if ($running) {
             $request->addResult("msg", $lastAnalyserMsg);
@@ -109,6 +112,12 @@ sub _countTracksInDb {
                 $sth->execute();
                 $tracksInDb = $sth->fetchrow_array();
                 $sth->finish();
+
+                $sth = $dbh->prepare( "SELECT COUNT(1) FROM Failures" );
+                $sth->execute();
+                $trackFailuresInDb = $sth->fetchrow_array();
+                $sth->finish();
+
                 $dbh->disconnect();
                 $lastTracksInDbCountTime = $now;
             }
@@ -116,7 +125,6 @@ sub _countTracksInDb {
     } else {
         $tracksInDb = 0;
     }
-    return $tracksInDb;
 }
 
 sub _startAnalyserCheckTimer {

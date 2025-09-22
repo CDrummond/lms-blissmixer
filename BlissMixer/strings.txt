@@ -208,7 +208,10 @@ BLISSMIXER_ANALYSER_AUTH_NOT_SUPPORTED
 	EN	Before you can use this mixer your music files need to be analysed. However, your LMS server is password protected and analysis via LMS is not currently supported with this configuration. You will need to download the analyser separately and run manually. Analyser executables can be found <a href="https://github.com/CDrummond/bliss-analyser/releases" target="_blank">here</a> and the <a href="https://raw.githubusercontent.com/CDrummond/bliss-analyser/refs/heads/master/UserGuide.md" target="_blank">user guide</a> will provide instructions on its use.
 
 BLISSMIXER_ANALYSED_TRACKS
-	EN	Tracks analysed: %1
+	EN	Analysed: %1
+
+BLISSMIXER_FAILED_TRACKS
+	EN	Failed: %1
 
 BLISSMIXER_MIX_SETTINGS
 	EN	Mixer settings
