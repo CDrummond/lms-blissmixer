@@ -171,7 +171,7 @@ sub startAnalyser {
         push @params, "--preserve";
     }
     push @params, "--threads";
-    push @params, "1111"; # 1111 => num cores -1
+    push @params, "-1"; # => num cores -1
     push @params, "--lms";
     push @params, "127.0.0.1";
     push @params, "--json";
