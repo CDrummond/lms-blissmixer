@@ -3,16 +3,16 @@
 <extension>
 	<id>6979c1ee-0644-4ed1-a440-c5ff6869eae4</id>
 	<icon>plugins/BlissMixer/html/images/blissmixer.png</icon>
-	<name>BLISSMIXER</name>
+	<name>BlissMixer (Linux)</name>
 	<module>Plugins::BlissMixer::Plugin</module>
 	<importmodule>Plugins::BlissMixer::Importer</importmodule>
-	<version>0.6.0</version>
-	<target>unux</target>
+	<version>0.7.1</version>
+	<target>unix</target>
 	<description>BLISSMIXER_DESC</description>
 	<creator>Craig Drummond</creator>
 	<defaultState>
-		<mac>enabled</mac>
-		<win>enabled</win>
+		<mac>disabled</mac>
+		<win>disabled</win>
 		<other>enabled</other>
 	</defaultState>
 	<homepageURL>https://github.com/CDrummond/lms-blissmixer</homepageURL>
