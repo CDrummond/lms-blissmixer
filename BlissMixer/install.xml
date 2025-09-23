@@ -3,7 +3,7 @@
 <extension>
 	<id>6979c1ee-0644-4ed1-a440-c5ff6869eae4</id>
 	<icon>plugins/BlissMixer/html/images/blissmixer.png</icon>
-	<name>BlissMixer (Linux)</name>
+	<name>BLISSMIXER</name>
 	<module>Plugins::BlissMixer::Plugin</module>
 	<importmodule>Plugins::BlissMixer::Importer</importmodule>
 	<version>0.7.1</version>
@@ -11,8 +11,8 @@
 	<description>BLISSMIXER_DESC</description>
 	<creator>Craig Drummond</creator>
 	<defaultState>
-		<mac>disabled</mac>
-		<win>disabled</win>
+		<mac>enabled</mac>
+		<win>enabled</win>
 		<other>enabled</other>
 	</defaultState>
 	<homepageURL>https://github.com/CDrummond/lms-blissmixer</homepageURL>

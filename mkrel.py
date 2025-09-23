@@ -18,10 +18,6 @@ TARGETS = { 'linux':   'unix',
             'windows': 'windows',
             'mac':     'mac' }
 
-UI_NAME = { 'linux':   'Linux',
-            'windows': 'Windows',
-            'mac':     'macOS' }
-
 MOVE_FOLDERS = {'linux':   ['mac', 'windows'],
                 'windows': ['aarch64-linux', 'armhf-linux', 'x86_64-linux', 'mac'],
                 'mac':     ['aarch64-linux', 'armhf-linux', 'x86_64-linux', 'windows']}
@@ -79,10 +75,7 @@ def updateInstallXml(version, osname):
     info("Updating %s" % installXml)
     with open(installXml, "r") as f:
         lines=f.readlines()
-    toUpdate = {'version': version, 'target': TARGETS[osname], 'name': 'BlissMixer (%s)' % UI_NAME[osname],
-                'mac':'enabled' if osname=='mac' else 'disabled',
-                'win':'enabled' if osname=='windows' else 'disabled',
-                'other':'enabled' if osname=='linux' else 'disabled'}
+    toUpdate = {'version': version, 'target': TARGETS[osname]}
 
     for t in toUpdate:
         for i in range(len(lines)):
