@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<extensions>
+ <details>
+  <title lang="EN">Bliss Mixer</title>
+ </details>
+ <plugins>
+  <plugin name="BlissMixer" version="0.7.0" minTarget="7.9.0" maxTarget="*">
+   <title lang="EN">Bliss Mixer</title>
+   <desc lang="EN">Bliss Mixer for DSTM</desc>
+   <url>https://github.com/CDrummond/lms-blissmixer/releases/download/0.7.0/lms-blissmixer-linux-0.7.0.zip</url>
+   <sha>95cfa5ac5885d76f1fbce0e9a03e38e255bd4dda</sha>
+   <target>unix</target>
+   <creator>Craig Drummond</creator>
+  </plugin>
+  <plugin name="BlissMixer" version="0.7.0" minTarget="7.9.0" maxTarget="*">
+   <title lang="EN">Bliss Mixer</title>
+   <desc lang="EN">Bliss Mixer for DSTM</desc>
+   <url>https://github.com/CDrummond/lms-blissmixer/releases/download/0.7.0/lms-blissmixer-mac-0.7.0.zip</url>
+   <sha>b8962ffc8322534764925b34a5b26e45b2d8c5b8</sha>
+   <target>mac</target>
+   <creator>Craig Drummond</creator>
+  </plugin>
+  <plugin name="BlissMixer" version="0.7.0" minTarget="7.9.0" maxTarget="*">
+   <title lang="EN">Bliss Mixer</title>
+   <desc lang="EN">Bliss Mixer for DSTM</desc>
+   <url>https://github.com/CDrummond/lms-blissmixer/releases/download/0.7.0/lms-blissmixer-windows-0.7.0.zip</url>
+   <sha>ea17ee9878ecdbc5f28e08e7d5d2df48f1a9799a</sha>
+   <target>windows</target>
+   <creator>Craig Drummond</creator>
+  </plugin>
+ </plugins>
+</extensions>
+
