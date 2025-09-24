@@ -172,6 +172,12 @@ sub postinitPlugin {
 }
 
 sub _initBinaries {
+    my $dir = dirname(__FILE__);
+    if (main::ISWINDOWS) {
+        Slim::Utils::Misc::addFindBinPaths(catdir($dir, 'Bin', 'windows'));
+    } elsif (main::ISMAC) {
+        Slim::Utils::Misc::addFindBinPaths(catdir($dir, 'Bin', 'mac'));
+    }
     $mixerBinary = Slim::Utils::Misc::findbin('bliss-mixer');
     main::INFOLOG && $log->info("Mixer: ${mixerBinary}");
 
