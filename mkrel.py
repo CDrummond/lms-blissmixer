@@ -10,10 +10,11 @@
 import hashlib, os, re, requests, shutil, sys
 
 
+PUBLIC_XML = "public.xml"
 REPO_XML = "repo.xml"
 PLUGIN_NAME = "BlissMixer"
 PLUGIN_GIT_NAME = "lms-blissmixer"
-
+REPO_ORDER = ['linux', 'mac', 'windows']
 MOVE_FOLDERS = {'linux':   ['mac', 'windows'],
                 'windows': ['aarch64-linux', 'armhf-linux', 'x86_64-linux', 'mac'],
                 'mac':     ['aarch64-linux', 'armhf-linux', 'x86_64-linux', 'windows']}
@@ -124,9 +125,15 @@ def updateRepoXml(repo, version, zipFile, sha1, osname, pluginName=None):
     inSection = pluginName is None
     with open(repo, "r") as f:
         lines=f.readlines()
+    pos = REPO_ORDER.index(osname)
+    sectioncount = 0
     for i in range(len(lines)):
         if pluginName is not None and '<plugin name="' in lines[i]:
-            inSection = pluginName in lines[i]
+            if pluginName in lines[i]:
+                if sectioncount==pos:
+                    inSection = True
+                else:
+                    sectioncount += 1
         if inSection:
             updated = updateLine(lines[i], 'version="', '"', version)
             if updated:
@@ -162,14 +169,14 @@ version=sys.argv[1]
 if version!="test":
     checkVersion(version)
 
-for osname in ['Mac', 'Windows', 'Linux']:
-    osnamel = osname.lower()
+for osname in ['mac', 'windows', 'linux']:
     if version!="test":
-        checkVersionExists(version, osnamel)
-        updateInstallXml(version, osnamel)
+        checkVersionExists(version, osname)
+        updateInstallXml(version, osname)
 
-    zipFile = createZip(version, osnamel)
+    zipFile = createZip(version, osname)
     sha1 = getSha1Sum(zipFile)
     if version!="test" and os.path.exists(REPO_XML):
-        updateRepoXml(REPO_XML, version, zipFile, sha1, osnamel, PLUGIN_NAME+" ("+osname+")")
-
+        updateRepoXml(REPO_XML, version, zipFile, sha1, osname, PLUGIN_NAME)
+    if version!="test" and os.path.exists(PUBLIC_XML):
+        updateRepoXml(PUBLIC_XML, version, zipFile, sha1, osname, PLUGIN_NAME)
