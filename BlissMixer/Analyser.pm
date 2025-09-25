@@ -53,6 +53,15 @@ sub init {
     $dbPath = shift;
     $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
     main::INFOLOG && $log->info("Analyser: ${analyserBinary}");
+    if (!main::ISWINDOWS && !main::ISMAC) {
+        # Check can actually run bliss-analyser. On Linux/x86 this is linked to glibc
+        # and wont work on some old versions.
+        my $output = `${analyserBinary} --help`;
+        if (index($output, "Bliss Analyser")<0) {
+            $analyserBinary = undef;
+            main::INFOLOG && $log->info("Could not start analyser, so assuming wrong ABI");
+        }
+    }
 }
 
 sub cliCommand {
