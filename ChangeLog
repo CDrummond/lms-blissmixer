@@ -1,9 +1,14 @@
+0.7.2
+-----
+1. Bliss analyser should now properly escape JSON strings.
+2. Build Linux bliss mixer binary with musl, and not glibc, for better
+   portability.
+3. Check bliss-analyser can be started on Linux, and if not don't allow
+   analysis from settings page.
+
 0.7.1
 -----
 1. Fix bin path on Windows and macOS.
-2. Check bliss-analyser can be started on Linux, and if not don't allow
-   analysis from settings page.
-3. Analyser should now properly escape JSON strings.
 
 0.7.0
 -----
