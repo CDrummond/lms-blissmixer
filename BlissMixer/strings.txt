@@ -160,7 +160,7 @@ BLISSMIXER_MAX_BPM_DIFF_DESC
 	EN	Maximum difference between BPM of seed track and candidate tracks. Set to 0 for no maximum.
 
 BLISSMIXER_USE_FOREST
-	EN	Extended isolation forest
+	EN	Extended isolation forest (experimental)
 
 BLISSMIXER_USE_FOREST_DESC
 	EN	When using more 4 (or more) seed tracks, use <a href="https://en.wikipedia.org/wiki/Isolation_forest" target="_blank">extended isolation forest</a> to locate similar tracks to the seeds.
