@@ -219,11 +219,11 @@ BLISSMIXER_ANALYSED_TRACKS
 BLISSMIXER_FAILED_TRACKS
 	EN	Failed: %1
 
-BLISSMIXER_ANALYSER_IGNORE_MEDIA_FOLDERS
-	EN	Ignore media folders
+BLISSMIXER_ANALYSER_EXCLUDE_MEDIA_FOLDERS
+	EN	Exclude media folders
 
-BLISSMIXER_ANALYSER_IGNORE_MEDIA_FOLDERS_DESC
-	EN	A list of media folders (as configured in the 'Basic Settings' page) that should <b>not</b> be analysed. Use this, for instance, if you have a media folder defined for audiobooks.<br/><br/><b>NOTE:</b> You will need to save this setting before starting an analysis.
+BLISSMIXER_ANALYSER_EXCLUDE_MEDIA_FOLDERS_DESC
+	EN	A list of media folders (as configured in the 'Basic Settings' page) that should <b>not</b> be analysed. Use this, for instance, if you have a media folder defined for audiobooks. Each folder should be on a new line.<br/><br/><b>NOTE:</b> You will need to save this setting before starting an analysis.
 
 BLISSMIXER_MIX_SETTINGS
 	EN	Mixer settings
