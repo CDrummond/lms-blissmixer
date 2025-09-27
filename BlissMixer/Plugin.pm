@@ -33,6 +33,7 @@ use Plugins::BlissMixer::Settings;
 use Plugins::BlissMixer::ProtocolHandler;
 
 use constant DEF_NUM_DSTM_TRACKS => 5;
+use constant NUM_FOREST_SEED_TRACKS => 10;
 use constant NUM_SEED_TRACKS => 5;
 use constant MAX_PREVIOUS_TRACKS => 200;
 use constant DEF_MAX_PREVIOUS_TRACKS => 100;
@@ -405,6 +406,8 @@ sub _cliCommand {
         my $col = 'track';
         my $param;
         my $dbh = Slim::Schema->dbh;
+        my $useForest = $prefs->get('use_forest') || 0;
+        my $numSeedTracks = $useForest ? NUM_FOREST_SEED_TRACKS : NUM_SEED_TRACKS;
         if ($request->getParam('artist_id')) {
             $sql = $dbh->prepare_cached( qq{SELECT track FROM contributor_track WHERE contributor = ?} );
             $param = $request->getParam('artist_id');
@@ -429,9 +432,9 @@ sub _cliCommand {
                 }
             }
         }
-        if (scalar @seedsToUse > NUM_SEED_TRACKS) {
+        if (scalar @seedsToUse > $numSeedTracks) {
             Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
-            @seedsToUse = splice(@seedsToUse, 0, NUM_SEED_TRACKS);
+            @seedsToUse = splice(@seedsToUse, 0, $numSeedTracks);
         }
 
         foreach my $trackObj (@seedsToUse) {
@@ -966,7 +969,9 @@ sub _dstmMix {
     _resetMixerTimeout();
 
     main::DEBUGLOG && $log->debug("Get tracks");
-    my $seedTracks = _getMixableProperties($client, NUM_SEED_TRACKS); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, NUM_SEED_TRACKS);
+    my $useForest = $prefs->get('use_forest') || 0;
+    my $numSeedTracks = $useForest ? NUM_FOREST_SEED_TRACKS : NUM_SEED_TRACKS;
+    my $seedTracks = _getMixableProperties($client, $numSeedTracks); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, NUM_SEED_TRACKS);
 
     # don't seed from radio stations - only do if we're playing from some track based source
     # Get list of valid seeds...
