@@ -1,7 +1,7 @@
 0.8.0
 -----
-1. Add option to use 'extended isolation forest' for mixes with more than 1
-   seed track.
+1. Add option to use 'extended isolation forest' for mixes with 4 or more more
+   seed tracks.
 
 0.7.2
 -----
