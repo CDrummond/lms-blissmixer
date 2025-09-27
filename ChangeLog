@@ -1,3 +1,8 @@
+0.8.0
+-----
+1. Add option to use 'extended isolation forest' for mixes with more than 1
+   seed track.
+
 0.7.2
 -----
 1. Bliss analyser should now properly escape JSON strings.

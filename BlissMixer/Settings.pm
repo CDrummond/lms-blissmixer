@@ -36,7 +36,8 @@ sub prefs {
     return ($prefs, 'host mixer_port', 'filter_genres', 'filter_xmas', 'min_duration', 'max_duration',
                     'no_repeat_artist', 'no_repeat_album', 'no_repeat_track', 'dstm_tracks', 'genre_groups',
                     'weight_tempo', 'weight_timbre', 'weight_loudness', 'weight_chroma', 'max_bpm_diff',
-                    'use_track_genre', 'run_analyser_after_scan', 'analysis_read_tags', 'analysis_write_tags');
+                    'use_track_genre', 'run_analyser_after_scan', 'analysis_read_tags', 'analysis_write_tags',
+                    'use_forest');
 }
 
 sub beforeRender {
