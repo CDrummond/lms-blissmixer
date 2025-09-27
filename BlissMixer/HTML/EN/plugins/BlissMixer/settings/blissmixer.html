@@ -22,7 +22,9 @@
         [% WRAPPER settingGroup title="BLISSMIXER_RUN_AFTER_SCAN" desc="BLISSMIXER_RUN_AFTER_SCAN_DESC" %]
         <input type="checkbox" name="pref_run_analyser_after_scan" id="run_analyser_after_scan" [% IF prefs.run_analyser_after_scan %] checked [% END %] value="1"/>
         [% END %]
-
+        [% WRAPPER settingGroup title="BLISSMIXER_ANALYSER_IGNORE_MEDIA_FOLDERS" desc="BLISSMIXER_ANALYSER_IGNORE_MEDIA_FOLDERS_DESC" %]
+            <textarea class="stdedit" name="pref_analyser_ignore_dirs" id="analyser_ignore_dirs" cols="80" rows="3">[% prefs.analyser_ignore_dirs %]</textarea>
+        [% END %]
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_FILES" desc="BLISSMIXER_ANALYSE_FILES_DESC" %]
         <button id="analyser" onclick="toggleBlissAnalyser()" type="button"></button>
         [% END %]

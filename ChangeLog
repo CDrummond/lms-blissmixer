@@ -2,6 +2,7 @@
 -----
 1. Add option to use 'extended isolation forest' for mixes with 4 or more more
    seed tracks.
+2. Add option to set list of media folders to not analyse.
 
 0.7.2
 -----

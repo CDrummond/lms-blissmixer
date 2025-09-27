@@ -161,9 +161,23 @@ sub startAnalyser {
     my @params = ();
     push @params, "--db";
     push @params, $prefsDir . "/bliss.db";
+
     my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
     my $numDirs = 0;
+    my @ignoreDirs = ();
+    my $idpref = $prefs->get('analyser_ignore_dirs');
+    if ($idpref) {
+        my @lines = split(/\n/, $idpref);
+        foreach my $line (@lines) {
+            push(@ignoreDirs, $line);
+        }
+    }
+    my %ignoreDirsHash = map { $_ => 1 } @ignoreDirs;
     foreach my $dir (@$mediaDirs) {
+        if (exists $ignoreDirsHash{$dir}) {
+            main::DEBUGLOG && $log->debug("Ignoring ${dir}");
+            next;
+        }
         if ($numDirs>0) {
             push @params, "--music_${numDirs}";
         } else {
@@ -172,6 +186,7 @@ sub startAnalyser {
         push @params, $dir;
         $numDirs++;
     }
+
     if ( $prefs->get('analysis_read_tags')) {
         push @params, "--readtags";
     }
