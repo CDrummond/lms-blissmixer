@@ -2,16 +2,16 @@
     .hidden {
         display:none;
     }
-    .current-section {
+    .shown-section {
         cursor:pointer;
     }
-    .current-section:before {
+    .shown-section:before {
         content:"\2BC6\00a0";
     }
-    .other-section {
+    .hidden-section {
         cursor:pointer;
     }
-    .other-section:before {
+    .hidden-section:before {
         content:"\2BC8\00a0";
     }
 </style>
@@ -19,7 +19,7 @@
 
     [% WRAPPER settingSection %]
 
-        <b style="font-size:125%" id="analyser-section-header" class="other-section" onclick="showSection('analyser-section', 'mixer-section')">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
+        <b style="font-size:125%" id="analyser-section-header" class="hidden-section" onclick="toggleSection('analyser-section', 'mixer-section')">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
         <div id="analyser-section" class="hidden">
         [% IF server_auth || no_analyser_binary %]
           [% IF no_analyser_binary %]
@@ -53,7 +53,7 @@
         [% END %]
 
         </div>
-        <b style="font-size:125%" id="mixer-section-header" class="current-section" onclick="showSection('mixer-section', 'analyser-section')">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
+        <b style="font-size:125%" id="mixer-section-header" class="shown-section" onclick="toggleSection('mixer-section', 'analyser-section')">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
         <div id="mixer-section">
         <div style="opacity:0.6">[% "BLISSMIXER_MIX_SETTINGS_NOTE" | string %]</div><br/>
 
@@ -212,33 +212,29 @@
         statusInterval = setInterval(getAnalyserStatus, intervalDuration);
     }
 
-    function toggleClass(elem, clz, addClz) {
-        let classes = elem.className.split(' ');
-        let hasClz = classes.includes(clz);
-        if (addClz && !hasClz) {
-            elem.classList.add(clz);
-        } else if (!addClz && hasClz) {
-            elem.classList.remove(clz);
+    function toggleSection(id) {
+        let elem = document.getElementById(id);
+        if (undefined!=elem) {
+            setSectionShown(id, elem.className.split(' ').includes("hidden"));
         }
     }
 
-    function showSection(toShowId, toHideId) {
-        let toShow = document.getElementById(toShowId);
-        let toHide = document.getElementById(toHideId);
-        if (undefined!=toShow && undefined!=toHide) {
-            toggleClass(toShow, "hidden", false);
-            toggleClass(toHide, "hidden", true);
-            let toShowHeader = document.getElementById(toShowId+"-header");
-            let toHideHeader = document.getElementById(toHideId+"-header");
-            if (undefined!=toShowHeader && undefined!=toHideHeader) {
-                toggleClass(toShowHeader, "current-section", true);
-                toggleClass(toHideHeader, "current-section", false);
-                toggleClass(toShowHeader, "other-section", false);
-                toggleClass(toHideHeader, "other-section", true);
+    function setSectionShown(id, show) {
+        let elem = document.getElementById(id);
+        let header = document.getElementById(id+"-header");
+        if (undefined!=elem  && undefined!=header) {
+            elem.classList.remove("hidden");
+            header.classList.remove("shown-section");
+            header.classList.remove("hidden-section");
+            if (show) {
+                header.classList.add("shown-section");
+            } else {
+                elem.classList.add("hidden");
+                header.classList.add("hidden-section");
             }
             try {
                 if (undefined!=window.localStorage) {
-                    window.localStorage.setItem("bliss-mixer::section", toShowId);
+                    window.localStorage.setItem("bliss-mixer::"+id, show);
                 }
             } catch (e)  { }
         }
@@ -249,10 +245,10 @@
         getAnalyserStatus();
         try {
             if (undefined!=window.localStorage) {
-                let val = window.localStorage.getItem("bliss-mixer::section");
-                if (undefined!=val && (val=="analyser-section" || val=="mixer-section")) {
-                    showSection(val, val=="analyser-section" ? "mixer-section" : "analyser-section");
-                }
+                ["mixer-section", "analyser-section"].forEach(sect => {
+                    let val = window.localStorage.getItem("bliss-mixer::"+sect);
+                    setSectionShown(sect, undefined==val ? "mixer-section"==sect : "true"==val);
+                });
             }
         } catch (e) {
         }
