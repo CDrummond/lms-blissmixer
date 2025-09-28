@@ -19,7 +19,7 @@
 
     [% WRAPPER settingSection %]
 
-        <b style="font-size:125%" id="analyser-section-header" class="other-section" onclick="toggleSection('analyser-section', 'mixer-section')">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
+        <b style="font-size:125%" id="analyser-section-header" class="other-section" onclick="showSection('analyser-section', 'mixer-section')">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
         <div id="analyser-section" class="hidden">
         [% IF server_auth || no_analyser_binary %]
           [% IF no_analyser_binary %]
@@ -53,7 +53,7 @@
         [% END %]
 
         </div>
-        <b style="font-size:125%" id="mixer-section-header" class="current-section" onclick="toggleSection('mixer-section', 'analyser-section')">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
+        <b style="font-size:125%" id="mixer-section-header" class="current-section" onclick="showSection('mixer-section', 'analyser-section')">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
         <div id="mixer-section">
         <div style="opacity:0.6">[% "BLISSMIXER_MIX_SETTINGS_NOTE" | string %]</div><br/>
 
@@ -222,18 +222,10 @@
         }
     }
 
-    function toggleSection(toShowId, toHideId) {
+    function showSection(toShowId, toHideId) {
         let toShow = document.getElementById(toShowId);
         let toHide = document.getElementById(toHideId);
         if (undefined!=toShow && undefined!=toHide) {
-            if (!toShow.className.split(' ').includes("hidden")) {
-                let a = toShow;
-                toShow = toHide;
-                toHide = a;
-                a = toShowId;
-                toShowId = toHideId;
-                toHideId = a;
-            }
             toggleClass(toShow, "hidden", false);
             toggleClass(toHide, "hidden", true);
             let toShowHeader = document.getElementById(toShowId+"-header");
@@ -244,11 +236,25 @@
                 toggleClass(toShowHeader, "other-section", false);
                 toggleClass(toHideHeader, "other-section", true);
             }
+            try {
+                if (undefined!=window.localStorage) {
+                    window.localStorage.setItem("bliss-mixer::section", toShowId);
+                }
+            } catch (e)  { }
         }
     }
 
     window.addEventListener("load",() => {
         statusInterval = setInterval(getAnalyserStatus, 1000);
         getAnalyserStatus();
+        try {
+            if (undefined!=window.localStorage) {
+                let val = window.localStorage.getItem("bliss-mixer::section");
+                if (undefined!=val && (val=="analyser-section" || val=="mixer-section")) {
+                    showSection(val, val=="analyser-section" ? "mixer-section" : "analyser-section");
+                }
+            }
+        } catch (e) {
+        }
     });
 </script>
