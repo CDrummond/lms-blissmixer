@@ -1,8 +1,26 @@
+<style>
+    .hidden {
+        display:none;
+    }
+    .current-section {
+        cursor:pointer;
+    }
+    .current-section:before {
+        content:"\2BC6\00a0";
+    }
+    .other-section {
+        cursor:pointer;
+    }
+    .other-section:before {
+        content:"\2BC8\00a0";
+    }
+</style>
 [% PROCESS settings/header.html %]
 
     [% WRAPPER settingSection %]
 
-        <b style="font-size:120%">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
+        <b style="font-size:125%" id="analyser-section-header" class="other-section" onclick="toggleSection('analyser-section', 'mixer-section')">[% "BLISSMIXER_ANALYSER" | string %]</b><br/><br/>
+        <div id="analyser-section" class="hidden">
         [% IF server_auth || no_analyser_binary %]
           [% IF no_analyser_binary %]
           <div>[% "BLISSMIXER_ANALYSER_NOT_FOUND" | string %]</div><br/>
@@ -34,8 +52,9 @@
         [% END %]
         [% END %]
 
-        <hr style="opacity:0.4" class="sub-sep"/><br/>
-        <b style="font-size:120%">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
+        </div>
+        <b style="font-size:125%" id="mixer-section-header" class="current-section" onclick="toggleSection('mixer-section', 'analyser-section')">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
+        <div id="mixer-section">
         <div style="opacity:0.6">[% "BLISSMIXER_MIX_SETTINGS_NOTE" | string %]</div><br/>
 
         [% WRAPPER settingGroup title="BLISSMIXER_NO_REPEAT_ARTIST" desc="BLISSMIXER_NO_REPEAT_ARTIST_DESC" %]
@@ -115,7 +134,7 @@
         [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA" %]
             <input type="text" class="stdedit sliderInput_1_100_1" name="pref_weight_chroma" id="weight_chroma" value="[% prefs.weight_chroma %]" size="5">
         [% END %]
-
+        </div>
     [% END %]
 
 [% PROCESS settings/footer.html %]
@@ -191,6 +210,41 @@
         intervalDuration = v;
         clearInterval(statusInterval);
         statusInterval = setInterval(getAnalyserStatus, intervalDuration);
+    }
+
+    function toggleClass(elem, clz, addClz) {
+        let classes = elem.className.split(' ');
+        let hasClz = classes.includes(clz);
+        if (addClz && !hasClz) {
+            elem.classList.add(clz);
+        } else if (!addClz && hasClz) {
+            elem.classList.remove(clz);
+        }
+    }
+
+    function toggleSection(toShowId, toHideId) {
+        let toShow = document.getElementById(toShowId);
+        let toHide = document.getElementById(toHideId);
+        if (undefined!=toShow && undefined!=toHide) {
+            if (!toShow.className.split(' ').includes("hidden")) {
+                let a = toShow;
+                toShow = toHide;
+                toHide = a;
+                a = toShowId;
+                toShowId = toHideId;
+                toHideId = a;
+            }
+            toggleClass(toShow, "hidden", false);
+            toggleClass(toHide, "hidden", true);
+            let toShowHeader = document.getElementById(toShowId+"-header");
+            let toHideHeader = document.getElementById(toHideId+"-header");
+            if (undefined!=toShowHeader && undefined!=toHideHeader) {
+                toggleClass(toShowHeader, "current-section", true);
+                toggleClass(toHideHeader, "current-section", false);
+                toggleClass(toShowHeader, "other-section", false);
+                toggleClass(toHideHeader, "other-section", true);
+            }
+        }
     }
 
     window.addEventListener("load",() => {

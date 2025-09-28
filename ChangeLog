@@ -1,3 +1,7 @@
+0.8.1
+-----
+1. Toggle between analyser and mixer settings in settings page.
+
 0.8.0
 -----
 1. Add option to use 'extended isolation forest' for mixes with 4 or more more
