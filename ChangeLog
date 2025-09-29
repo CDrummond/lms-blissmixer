@@ -1,6 +1,7 @@
 0.8.1
 -----
 1. Allow collapsing analyser and mixer settings in settings page.
+2. Fix invoking analysis when LMS scans for music.
 
 0.8.0
 -----
