@@ -49,6 +49,7 @@ sub beforeRender {
     $paramRef->{'stop_analysis_text'} = string('BLISSMIXER_ANALYSE_ABORT_BUTTON');
     $paramRef->{'analysed_tracks_text'} = string('BLISSMIXER_ANALYSED_TRACKS');
     $paramRef->{'failed_tracks_text'} = string('BLISSMIXER_FAILED_TRACKS');
+    $paramRef->{'analysis_start'} = string('BLISSMIXER_ANALYSIS_START_TIME');
     my $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
     $paramRef->{'no_analyser_binary'} = !$analyserBinary;
 }

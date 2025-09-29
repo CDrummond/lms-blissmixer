@@ -48,6 +48,8 @@ my $dbPath;
 my $lastTracksInDbCountTime = 0;
 my $tracksInDb = 0;
 my $trackFailuresInDb = 0;
+# Epoch time analysis was started
+my $analysisStartTime = 0;
 
 sub init {
     $dbPath = shift;
@@ -72,10 +74,10 @@ sub cliCommand {
         if ($analyser && $analyser->alive) {
             stopAnalyser("CLI");
         } else {
-            startAnalyser();
+            startAnalyser("CLI");
         }
     } elsif ($act eq 'start') {
-         startAnalyser();
+         startAnalyser("CLI");
     } elsif ($act eq 'stop') {
          stopAnalyser("CLI");
     } elsif ($act eq 'status') {
@@ -86,6 +88,9 @@ sub cliCommand {
         $request->addResult("running", $running);
         if ($running) {
             $request->addResult("msg", $lastAnalyserMsg);
+            if ($analysisStartTime>0) {
+                $request->addResult("start", $analysisStartTime);
+            }
         }
     } elsif ($act eq 'update') {
         $lastAnalyserMsg = $request->getParam('msg');
@@ -148,6 +153,7 @@ sub _checkAnalyser {
 }
 
 sub startAnalyser {
+    my $reason = shift;
     if ($analyser && $analyser->alive) {
         main::DEBUGLOG && $log->debug("$analyserBinary already running");
     }
@@ -208,7 +214,9 @@ sub startAnalyser {
     push @params, "analyse-lms";
     main::DEBUGLOG && $log->debug("Start analyser: $analyserBinary @params");
     eval { $analyser = Proc::Background->new({ 'die_upon_destroy' => 1 }, $analyserBinary, @params); };
-
+    if ($reason && $reason eq "CLI") {
+        $analysisStartTime = time();
+    }
     if ($@) {
         $log->warn($@);
     } else {

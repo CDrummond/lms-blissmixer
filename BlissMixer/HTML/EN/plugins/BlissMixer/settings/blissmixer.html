@@ -183,8 +183,12 @@
                     analyseStatus = document.getElementById('analyser-status');
                 }
                 if (undefined!=analyseStatus) {
-                    analyseStatus.innerHTML = analyserIsRunning && undefined!=resp.result.msg ? resp.result.msg : "";
-                }
+                    let msg = analyserIsRunning && undefined!=resp.result.msg ? resp.result.msg : "";
+                    if (analyserIsRunning && undefined!=resp.result.start && undefined!=resp.result.msg) {
+                        let date = new Date(parseInt(resp.result.start)*1000);
+                        msg = "[% analysis_start %]<br/>".replace("%1", date.toLocaleDateString()+" "+date.toLocaleTimeString())+msg;
+                    }
+                    analyseStatus.innerHTML = msg;                }
                 if (undefined==analysedCount) {
                     analysedCount = document.getElementById('analysis-count');
                 }
