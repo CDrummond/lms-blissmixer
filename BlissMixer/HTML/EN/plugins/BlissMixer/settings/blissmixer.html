@@ -41,8 +41,10 @@
         <input type="checkbox" name="pref_run_analyser_after_scan" id="run_analyser_after_scan" [% IF prefs.run_analyser_after_scan %] checked [% END %] value="1"/>
         [% END %]
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSER_EXCLUDE_MEDIA_FOLDERS" desc="BLISSMIXER_ANALYSER_EXCLUDE_MEDIA_FOLDERS_DESC" %]
-            <textarea class="stdedit" name="pref_analyser_ignore_dirs" id="analyser_ignore_dirs" cols="80" rows="3">[% prefs.analyser_ignore_dirs %]</textarea>
+        <textarea class="stdedit" name="pref_analyser_ignore_dirs" id="analyser_ignore_dirs" cols="80" rows="3">[% prefs.analyser_ignore_dirs %]</textarea>
         [% END %]
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+        <div style="opacity:0.6">[% "BLISSMIXER_ANALYSIS_SETTINGS_NOTE" | string %]</div><br/>
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_FILES" desc="BLISSMIXER_ANALYSE_FILES_DESC" %]
         <button id="analyser" onclick="toggleBlissAnalyser()" type="button"></button>
         [% END %]
@@ -51,7 +53,7 @@
         <div id="analyser-status" style="margin-top:8px"></div>
         [% END %]
         [% END %]
-
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
         </div>
         <b style="font-size:125%" id="mixer-section-header" class="shown-section" onclick="toggleSection('mixer-section', 'analyser-section')">[% "BLISSMIXER_MIX_SETTINGS" | string %]</b><br/><br/>
         <div id="mixer-section">
