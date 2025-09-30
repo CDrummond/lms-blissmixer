@@ -219,11 +219,14 @@ BLISSMIXER_ANALYSER_EXCLUDE_MEDIA_FOLDERS
 BLISSMIXER_ANALYSER_EXCLUDE_MEDIA_FOLDERS_DESC
 	EN	A list of media folders (as configured in the 'Basic Settings' page) that should <b>not</b> be analysed. Use this, for instance, if you have a media folder defined for audiobooks. Each folder should be on a new line.<br/><br/><b>NOTE:</b> You will need to save this setting before starting an analysis.
 
+BLISSMIXER_ANALYSIS_STATUS
+	EN	Status:
+
 BLISSMIXER_ANALYSIS_START_TIME
-	EN	Start time: %1
+	EN	Start time:
 
 BLISSMIXER_ANALYSIS_DURATION
-	EN	Duration: %1
+	EN	Duration:
 
 BLISSMIXER_ANALYSIS_SETTINGS_NOTE
 	EN	If you update any of the above settings then you will need to save these <i>before</i> starting analysis.<br/><br/>When an anlysis is runnnig you will see some progress information below the 'Start Analysis' button. This will show the time elapsed and the names of some files. Files will not be displayed in order, as the list of files to analyse is split into chunks and processed in parallel. This output, therefore, is only to indicate that <i>something</i> is happening.<br/><br/>

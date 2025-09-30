@@ -14,6 +14,9 @@
     .hidden-section:before {
         content:"\2BC8\00a0";
     }
+    table tr td {
+        padding-right:4px;
+    }
 </style>
 [% PROCESS settings/header.html %]
 
@@ -44,7 +47,7 @@
         <textarea class="stdedit" name="pref_analyser_ignore_dirs" id="analyser_ignore_dirs" cols="80" rows="3">[% prefs.analyser_ignore_dirs %]</textarea>
         [% END %]
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSER_IGNORE" desc="BLISSMIXER_ANALYSER_IGNORE_DESC" %]
-        <textarea class="stdedit" name="pref_analyser_ignore_txt" id="analyser_analyser_ignore_txt" cols="80" rows="3">[% prefs.analyser_ignore_txt %]</textarea>
+        <textarea class="stdedit" name="pref_analyser_ignore_txt" id="analyser_analyser_ignore_txt" cols="80" rows="5">[% prefs.analyser_ignore_txt %]</textarea>
         [% END %]
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSER_MAX_FILES" desc="BLISSMIXER_ANALYSER_MAX_FILES_DESC" %]
         <input type="text" class="stdedit sliderInput_0_10000_50" name="pref_analyser_max_files" id="analyser_max_files" value="[% prefs.analyser_max_files %]" size="5">
@@ -190,18 +193,35 @@
                     analyseStatus = document.getElementById('analyser-status');
                 }
                 if (undefined!=analyseStatus) {
-                    let msg = analyserIsRunning && undefined!=resp.result.msg ? resp.result.msg : "";
+                    let status = analyserIsRunning && undefined!=resp.result.msg ? "<tr><td>[% analysis_status %]</td><td>"+resp.result.msg+"</td></tr>" : undefined;
+                    let start = undefined;
+                    let duration = undefined;
                     if (undefined!=resp.result.start) {
-                        console.log(resp.result.start, resp.result.duration);
                         if (undefined!=resp.result.duration) {
                             let s = parseInt(resp.result.duration);
                             let dstr = [parseInt(s / 60 / 60), parseInt(s / 60 % 60), parseInt(s % 60)].join(':').replace(/\b(\d)\b/g, '0$1');
-                            msg = "[% analysis_duration %]".replace("%1", dstr) + "<br/>" + msg;
+                            duration = "<tr><td>[% analysis_duration %]</td><td>"+dstr+"</td></tr>";
                         }
                         let date = new Date(parseInt(resp.result.start)*1000);
-                        msg = "[% analysis_start %]".replace("%1", date.toLocaleDateString()+" "+date.toLocaleTimeString()) + "<br/>" + msg;
+                        start = "<tr><td>[% analysis_start %]</td><td>"+date.toLocaleDateString()+" "+date.toLocaleTimeString()+"</td></tr>";
                     }
-                    analyseStatus.innerHTML = msg;                }
+                    if (undefined!=status || undefined!=start || undefined!=duration) {
+                        let msg = "<table>";
+                        if (undefined!=start) {
+                            msg += start;
+                        }
+                        if (undefined!=duration) {
+                            msg += duration;
+                        }
+                        if (undefined!=status) {
+                            msg += status;
+                        }
+                        msg += "</table>";
+                        analyseStatus.innerHTML = msg;
+                    } else {
+                        analyseStatus.innerHTML = "";
+                    }
+                }
                 if (undefined==analysedCount) {
                     analysedCount = document.getElementById('analysis-count');
                 }
