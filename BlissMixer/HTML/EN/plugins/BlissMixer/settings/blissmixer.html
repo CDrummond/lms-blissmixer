@@ -61,7 +61,6 @@
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
         <div style="opacity:0.6">[% "BLISSMIXER_ANALYSIS_SETTINGS_NOTE" | string %]</div><br/>
         <button id="analyser" onclick="toggleBlissAnalyser()" type="button" style="margin-bottom:16px"></button>
-        <div id="analysis-count"></div>
         <div id="analyser-status" style="margin-top:8px"></div>
         [% END %]
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
@@ -156,7 +155,6 @@
     let statusInterval = undefined;
     let analyseButton = undefined;
     let analyseStatus = undefined;
-    let analysedCount = undefined;
     let analyserStatusMsgCount = 0;
     let intervalDuration = 1000;
     let analyserIsRunning = false;
@@ -196,46 +194,39 @@
                     analyseStatus = document.getElementById('analyser-status');
                 }
                 if (undefined!=analyseStatus) {
-                    let status = analyserIsRunning && undefined!=resp.result.msg ? "<tr><td>[% analysis_status %]</td><td>"+resp.result.msg+"</td></tr>" : undefined;
+                    let count = undefined!=resp.result.count ? parseInt(resp.result.count) : 0;
+                    let analysed = "<tr><td>[% analysed_tracks_text %]</td><td>"+count+"</td></tr>";
+                    let fcount = undefined!=resp.result.failed ? parseInt(resp.result.failed) : 0;
+                    let failed = fcount > 0 ? "<tr><td>[% failed_tracks_text %]</td><td>"+fcount+"</td></tr>" : undefined;
+                    let status = analyserIsRunning && undefined!=resp.result.msg ? "<tr><td>[% analysis_status_text %]</td><td>"+resp.result.msg+"</td></tr>" : undefined;
                     let start = undefined;
                     let duration = undefined;
+
                     if (undefined!=resp.result.start) {
                         if (undefined!=resp.result.duration) {
                             let s = parseInt(resp.result.duration);
                             let dstr = [parseInt(s / 60 / 60), parseInt(s / 60 % 60), parseInt(s % 60)].join(':').replace(/\b(\d)\b/g, '0$1');
-                            duration = "<tr><td>[% analysis_duration %]</td><td>"+dstr+"</td></tr>";
+                            duration = "<tr><td>[% analysis_duration_text %]</td><td>"+dstr+"</td></tr>";
                         }
                         let date = new Date(parseInt(resp.result.start)*1000);
-                        start = "<tr><td>[% analysis_start %]</td><td>"+date.toLocaleDateString()+" "+date.toLocaleTimeString()+"</td></tr>";
+                        start = "<tr><td>[% analysis_start_text %]</td><td>"+date.toLocaleDateString()+" "+date.toLocaleTimeString()+"</td></tr>";
                     }
-                    if (undefined!=status || undefined!=start || undefined!=duration) {
-                        let msg = "<table>";
-                        if (undefined!=start) {
-                            msg += start;
-                        }
-                        if (undefined!=duration) {
-                            msg += duration;
-                        }
-                        if (undefined!=status) {
-                            msg += status;
-                        }
-                        msg += "</table>";
-                        analyseStatus.innerHTML = msg;
-                    } else {
-                        analyseStatus.innerHTML = "";
+                    let msg = "<table>";
+                    msg += analysed;
+                    if (undefined!=failed) {
+                        msg += failed;
                     }
-                }
-                if (undefined==analysedCount) {
-                    analysedCount = document.getElementById('analysis-count');
-                }
-                if (undefined!=analysedCount) {
-                    let count = undefined!=resp.result.count ? parseInt(resp.result.count) : 0;
-                    let failed = undefined!=resp.result.failed ? parseInt(resp.result.failed) : 0;
-                    let status = "[% analysed_tracks_text %]".replace("%1", count);
-                    if (failed>0) {
-                        status += " - " + "[% failed_tracks_text %]".replace("%1", failed);
+                    if (undefined!=start) {
+                        msg += start;
                     }
-                    analysedCount.innerHTML = status;
+                    if (undefined!=duration) {
+                        msg += duration;
+                    }
+                    if (undefined!=status) {
+                        msg += status;
+                    }
+                    msg += "</table>";
+                    analyseStatus.innerHTML = msg;
                 }
             }
             if (analyserIsRunning && intervalDuration>1000) {
