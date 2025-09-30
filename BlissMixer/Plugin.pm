@@ -1200,7 +1200,7 @@ sub _genreGroups {
                 $genre=~ s/^\s+//;
                 # right trim
                 $genre=~ s/\s+$//;
-                if (length $genre > 0){
+                if (length $genre > 0) {
                     push(@$grp, $genre);
                     $genresInGroups{$genre}=1;
                 }

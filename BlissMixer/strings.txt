@@ -240,6 +240,12 @@ BLISSMIXER_ANALYSER_MAX_THREADS
 BLISSMIXER_ANALYSER_MAX_THREADS_DESC
 	EN	Set the maximum number of threads that the analyser will use. If set to 0, then the analyser will use a maximum of 1 less than the number of cores of your CPU.
 
+BLISSMIXER_ANALYSER_IGNORE
+	EN	Ignore tracks
+
+BLISSMIXER_ANALYSER_IGNORE_DESC
+	EN	If you have have tracks n your library that you never want added to mixes, but as these are in your music collection they might be in your music queue and so could possibly be chosen as `seed` tracks for mixes, then you can use this setting to have the analyser mark these tracks as to be 'ignored' by the mixer. Each entry should be on a new line. For the format of these lines please refer to the <a href="https://raw.githubusercontent.com/CDrummond/bliss-analyser/refs/heads/master/UserGuide.md" target="_blank">user guide</a>).
+
 BLISSMIXER_MIX_SETTINGS
 	EN	Mixer
 

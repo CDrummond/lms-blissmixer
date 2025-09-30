@@ -247,7 +247,9 @@ sub startAnalyser {
     push @params, "--logging";
     push @params, "error";
     push @params, "--ignore";
-    push @params, $prefsDir . "/bliss-ignore.txt";
+    my $ignoreFile = $prefsDir . "/bliss-ignore.txt";
+    _writeIgnoreFile($ignoreFile);
+    push @params, $ignoreFile;
     push @params, "analyse-lms";
     main::DEBUGLOG && $log->debug("Start analyser: $analyserBinary @params");
     eval { $analyser = Proc::Background->new({ 'die_upon_destroy' => 1 }, $analyserBinary, @params); };
@@ -280,6 +282,27 @@ sub stopAnalyser {
         $analyser->die;
     } else {
         main::DEBUGLOG && $log->debug("$analyserBinary not running");
+    }
+}
+
+sub _writeIgnoreFile {
+    my $path = shift;
+    if (-e $path) {
+        if (! _deleteFile($path)) {
+            return 0;
+        }
+    }
+    if (open my $fh, ">", $path) {
+        my $ignore = $prefs->get('analyser_ignore_txt');
+        if ($ignore) {
+            my @lines = split(/\n/, $ignore);
+            foreach my $line (@lines) {
+                if (length $line > 0) {
+                    print $fh "$line\n";
+                }
+            }
+        }
+        close($fh);
     }
 }
 

@@ -37,7 +37,8 @@ sub prefs {
                     'no_repeat_artist', 'no_repeat_album', 'no_repeat_track', 'dstm_tracks', 'genre_groups',
                     'weight_tempo', 'weight_timbre', 'weight_loudness', 'weight_chroma', 'max_bpm_diff',
                     'use_track_genre', 'run_analyser_after_scan', 'analysis_read_tags', 'analysis_write_tags',
-                    'use_forest', 'analyser_ignore_dirs', 'analyser_max_files', 'analyser_max_threads');
+                    'use_forest', 'analyser_ignore_dirs', 'analyser_max_files', 'analyser_max_threads',
+                    'analyser_ignore_txt');
 }
 
 sub beforeRender {
