@@ -184,9 +184,15 @@
                 }
                 if (undefined!=analyseStatus) {
                     let msg = analyserIsRunning && undefined!=resp.result.msg ? resp.result.msg : "";
-                    if (analyserIsRunning && undefined!=resp.result.start && undefined!=resp.result.msg) {
+                    if (undefined!=resp.result.start) {
+                        console.log(resp.result.start, resp.result.duration);
+                        if (undefined!=resp.result.duration) {
+                            let s = parseInt(resp.result.duration);
+                            let dstr = [parseInt(s / 60 / 60), parseInt(s / 60 % 60), parseInt(s % 60)].join(':').replace(/\b(\d)\b/g, '0$1');
+                            msg = "[% analysis_duration %]".replace("%1", dstr) + "<br/>" + msg;
+                        }
                         let date = new Date(parseInt(resp.result.start)*1000);
-                        msg = "[% analysis_start %]<br/>".replace("%1", date.toLocaleDateString()+" "+date.toLocaleTimeString())+msg;
+                        msg = "[% analysis_start %]".replace("%1", date.toLocaleDateString()+" "+date.toLocaleTimeString()) + "<br/>" + msg;
                     }
                     analyseStatus.innerHTML = msg;                }
                 if (undefined==analysedCount) {

@@ -48,8 +48,9 @@ my $dbPath;
 my $lastTracksInDbCountTime = 0;
 my $tracksInDb = 0;
 my $trackFailuresInDb = 0;
-# Epoch time analysis was started
+# Epoch time analysis was started, and ended
 my $analysisStartTime = 0;
+my $analysisEndTime = 0;
 
 sub init {
     $dbPath = shift;
@@ -63,6 +64,14 @@ sub init {
             $analyserBinary = undef;
             main::INFOLOG && $log->info("Could not start analyser, so assuming wrong ABI");
         }
+    }
+    my $analysisStartTimeCfg = $prefs->get('analysis_start');
+    if ($analysisStartTimeCfg) {
+        $analysisStartTime = $analysisStartTimeCfg;
+    }
+    my $analysisEndTimeCfg = $prefs->get('analysis_end');
+    if ($analysisEndTimeCfg) {
+        $analysisEndTime = $analysisEndTimeCfg;
     }
 }
 
@@ -88,20 +97,35 @@ sub cliCommand {
         $request->addResult("running", $running);
         if ($running) {
             $request->addResult("msg", $lastAnalyserMsg);
-            if ($analysisStartTime>0) {
-                $request->addResult("start", $analysisStartTime);
+        }
+        if ($analysisStartTime>0) {
+            $request->addResult("start", $analysisStartTime);
+            print("RUNNING ${running} ST:${analysisStartTime}  ET:${analysisEndTime} \n\n");
+            if ($running) {
+                $request->addResult("duration", time()-$analysisStartTime);
+            } elsif ($analysisEndTime>$analysisStartTime) {
+                $request->addResult("duration", $analysisEndTime-$analysisStartTime);
             }
         }
     } elsif ($act eq 'update') {
         $lastAnalyserMsg = $request->getParam('msg');
         if ($lastAnalyserMsg eq ANALYSER_FINISHED_MSG) {
             main::DEBUGLOG && $log->debug("Analysis finished successfully");
+            _analysisEnded();
         }
     } else {
         $request->setStatusBadParams();
         return;
     }
     $request->setStatusDone();
+}
+
+sub _analysisEnded() {
+    if ($lastAnalyserStart>0) {
+        $lastAnalyserStart = 0;
+        $analysisEndTime = time();
+        $prefs->set('analysis_end', $analysisEndTime);
+    }
 }
 
 sub _countTracksInDb {
@@ -145,9 +169,13 @@ sub _checkAnalyser {
         if ($lastAnalyserCheckTimerStart<=0 || $now-$lastAnalyserCheckTimerStart>=(CHECK_ANALYSER_TIME-10)) {
             _startAnalyserCheckTimer();
         }
-    } elsif ($lastAnalyserStart>0 && $lastAnalyserMsg ne ANALYSER_FINISHED_MSG && $now-$lastAnalyserStart>MIN_ANALYSER_RUN_TIME) {
-        main::DEBUGLOG && $log->debug("Restart due to not running and " . ANALYSER_FINISHED_MSG . " not received");
-        startAnalyser();
+    } elsif ($lastAnalyserStart>0 && $lastAnalyserMsg ne ANALYSER_FINISHED_MSG) {
+        if ($now-$lastAnalyserStart>MIN_ANALYSER_RUN_TIME) {
+            main::DEBUGLOG && $log->debug("Restart due to not running and " . ANALYSER_FINISHED_MSG . " not received");
+            startAnalyser();
+        } else {
+            _analysisEnded();
+        }
     }
     return $running;
 }
@@ -216,6 +244,7 @@ sub startAnalyser {
     eval { $analyser = Proc::Background->new({ 'die_upon_destroy' => 1 }, $analyserBinary, @params); };
     if ($reason && $reason eq "CLI") {
         $analysisStartTime = time();
+        $prefs->set('analysis_start', $analysisStartTime);
     }
     if ($@) {
         $log->warn($@);
@@ -236,6 +265,7 @@ sub stopAnalyser {
     my $why = shift;
     main::DEBUGLOG && $log->debug("Stop analyser (${why})");
     Slim::Utils::Timers::killTimers(undef, \&_checkAnalyser);
+    _analysisEnded();
     $lastAnalyserStart = 0;
     if ($analyser && $analyser->alive) {
         $analyser->die;
