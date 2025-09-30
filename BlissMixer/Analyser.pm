@@ -288,9 +288,7 @@ sub stopAnalyser {
 sub _writeIgnoreFile {
     my $path = shift;
     if (-e $path) {
-        if (! _deleteFile($path)) {
-            return 0;
-        }
+        unlink($path);
     }
     if (open my $fh, ">", $path) {
         my $ignore = $prefs->get('analyser_ignore_txt');
