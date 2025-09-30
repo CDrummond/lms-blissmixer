@@ -45,13 +45,9 @@
         [% END %]
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
         <div style="opacity:0.6">[% "BLISSMIXER_ANALYSIS_SETTINGS_NOTE" | string %]</div><br/>
-        [% WRAPPER settingGroup title="BLISSMIXER_ANALYSE_FILES" desc="BLISSMIXER_ANALYSE_FILES_DESC" %]
-        <button id="analyser" onclick="toggleBlissAnalyser()" type="button"></button>
-        [% END %]
-        [% WRAPPER settingGroup  %]
+        <button id="analyser" onclick="toggleBlissAnalyser()" type="button" style="margin-bottom:16px"></button>
         <div id="analysis-count"></div>
         <div id="analyser-status" style="margin-top:8px"></div>
-        [% END %]
         [% END %]
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
         </div>
