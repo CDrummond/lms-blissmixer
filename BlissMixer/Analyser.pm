@@ -100,7 +100,6 @@ sub cliCommand {
         }
         if ($analysisStartTime>0) {
             $request->addResult("start", $analysisStartTime);
-            print("RUNNING ${running} ST:${analysisStartTime}  ET:${analysisEndTime} \n\n");
             if ($running) {
                 $request->addResult("duration", time()-$analysisStartTime);
             } elsif ($analysisEndTime>$analysisStartTime) {
