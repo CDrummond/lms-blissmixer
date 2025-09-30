@@ -3,6 +3,7 @@
 1. Allow collapsing analyser and mixer settings in settings page.
 2. Fix invoking analysis when LMS scans for music.
 3. Show analysis start date/time and duration in settings page.
+4. Add options to configure max files and threads of analyser.
 
 0.8.0
 -----

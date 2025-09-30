@@ -228,6 +228,18 @@ BLISSMIXER_ANALYSIS_DURATION
 BLISSMIXER_ANALYSIS_SETTINGS_NOTE
 	EN	If you update any of the above settings then you will need to save these <i>before</i> starting analysis.<br/><br/>When an anlysis is runnnig you will see some progress information below the 'Start Analysis' button. This will show the time elapsed and the names of some files. Files will not be displayed in order, as the list of files to analyse is split into chunks and processed in parallel. This output, therefore, is only to indicate that <i>something</i> is happening.<br/><br/>
 
+BLISSMIXER_ANALYSER_MAX_FILES
+	EN	Maximum files to analyse
+
+BLISSMIXER_ANALYSER_MAX_FILES_DESC
+	EN	If you have a lot of files to analyse, you may wish to analyse these in chunks. If so, the you can configure the maximum number of files to be analysed here. Set to 0 to analyse all your files.
+
+BLISSMIXER_ANALYSER_MAX_THREADS
+	EN	Max threads
+
+BLISSMIXER_ANALYSER_MAX_THREADS_DESC
+	EN	Set the maximum number of threads that the analyser will use. If set to 0, then the analyser will use a maximum of 1 less than the number of cores of your CPU.
+
 BLISSMIXER_MIX_SETTINGS
 	EN	Mixer
 

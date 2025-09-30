@@ -98,7 +98,9 @@ sub initPlugin {
         use_forest       => 0,
         run_analyser_after_scan => 0,
         analysis_read_tags => 0,
-        analysis_write_tags => 0
+        analysis_write_tags => 0,
+        analyser_max_files => 0,
+        analyser_max_threads => 0
     });
 
     $prefs->setChange(\&Plugins::BlissMixer::Importer::toggleUseImporter, 'run_analyser_after_scan');

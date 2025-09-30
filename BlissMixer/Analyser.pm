@@ -227,8 +227,18 @@ sub startAnalyser {
         push @params, "--writetags";
         push @params, "--preserve";
     }
+    my $maxFiles =  $prefs->get('analyser_max_files');
+    if ($maxFiles && $maxFiles>0) {
+        push @params, "--numfiles";
+        push @params, $maxFiles;
+    }
     push @params, "--threads";
-    push @params, "-1"; # => num cores -1
+    my $maxThreads =  $prefs->get('analyser_max_threads');
+    if ($maxThreads && $maxThreads>0) {
+        push @params, $maxThreads;
+    } else {
+        push @params, "-1"; # => num cores -1
+    }
     push @params, "--lms";
     push @params, "127.0.0.1";
     push @params, "--json";
