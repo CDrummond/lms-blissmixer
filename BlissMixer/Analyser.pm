@@ -48,6 +48,7 @@ my $analyserMode = "analyse";
 my $dbPath;
 my $lastTracksInDbCountTime = 0;
 my $tracksInDb = 0;
+my $ignoredTracksInDb = 0;
 my $trackFailuresInDb = 0;
 # Epoch time analysis was started, and ended
 my $analysisStartTime = 0;
@@ -94,6 +95,7 @@ sub cliCommand {
         my $running = _checkAnalyser();
         _countTracksInDb(0);
         $request->addResult("count", $tracksInDb);
+        $request->addResult("ignored", $ignoredTracksInDb);
         $request->addResult("failed", $trackFailuresInDb);
         $request->addResult("running", $running);
         if ($running) {
@@ -146,6 +148,11 @@ sub _countTracksInDb {
                 $tracksInDb = $sth->fetchrow_array();
                 $sth->finish();
 
+                $sth = $dbh->prepare( "SELECT COUNT(1) FROM TracksV2 WHERE Ignore=1" );
+                $sth->execute();
+                $ignoredTracksInDb = $sth->fetchrow_array();
+                $sth->finish();
+
                 $sth = $dbh->prepare( "SELECT COUNT(1) FROM Failures" );
                 $sth->execute();
                 $trackFailuresInDb = $sth->fetchrow_array();
@@ -157,6 +164,8 @@ sub _countTracksInDb {
         }
     } else {
         $tracksInDb = 0;
+        $ignoredTracksInDb = 0;
+        $trackFailuresInDb = 0;
     }
 }
 

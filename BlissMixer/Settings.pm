@@ -51,6 +51,7 @@ sub beforeRender {
     $paramRef->{'update_ignore_now_text'} = string('BLISSMIXER_ANALYSE_IGNORE_BUTTON');
     $paramRef->{'analysed_tracks_text'} = string('BLISSMIXER_ANALYSED_TRACKS');
     $paramRef->{'failed_tracks_text'} = string('BLISSMIXER_FAILED_TRACKS');
+    $paramRef->{'ignored_tracks_text'} = string('BLISSMIXER_IGNORED_TRACKS');
     $paramRef->{'analysis_status_text'} = string('BLISSMIXER_ANALYSIS_STATUS');
     $paramRef->{'analysis_start_text'} = string('BLISSMIXER_ANALYSIS_START_TIME');
     $paramRef->{'analysis_duration_text'} = string('BLISSMIXER_ANALYSIS_DURATION');
