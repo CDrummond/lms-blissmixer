@@ -55,7 +55,7 @@
         <textarea class="stdedit" name="pref_analyser_ignore_txt" id="analyser_analyser_ignore_txt" cols="80" rows="5">[% prefs.analyser_ignore_txt %]</textarea>
         [% END %]
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSER_MAX_FILES" desc="BLISSMIXER_ANALYSER_MAX_FILES_DESC" %]
-        <input type="number" class="stdedit sliderInput_0_10000_50" name="pref_analyser_max_files" id="analyser_max_files" value="[% prefs.analyser_max_files %]" size="5">
+        <input type="number" min="0" max="50000" class="stdedit" name="pref_analyser_max_files" id="analyser_max_files" value="[% prefs.analyser_max_files %]" size="5">
         [% END %]
         [% WRAPPER settingGroup title="BLISSMIXER_ANALYSER_MAX_THREADS" desc="BLISSMIXER_ANALYSER_MAX_THREADS_DESC" %]
         <input type="number" min="-4" max="256" class="stdedit" name="pref_analyser_max_threads" id="analyser_max_threads" value="[% prefs.analyser_max_threads %]" size="5">
@@ -73,31 +73,31 @@
         <div style="opacity:0.6">[% "BLISSMIXER_MIX_SETTINGS_NOTE" | string %]</div><br/>
 
         [% WRAPPER settingGroup title="BLISSMIXER_NO_REPEAT_ARTIST" desc="BLISSMIXER_NO_REPEAT_ARTIST_DESC" %]
-        <input type="number" min="0" max="200" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_artist" id="no_repeat_artist" value="[% prefs.no_repeat_artist %]" size="5">
+        <input type="number" min="0" max="200" class="stdedit" name="pref_no_repeat_artist" id="no_repeat_artist" value="[% prefs.no_repeat_artist %]" size="5">
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_NO_REPEAT_ALBUM" desc="BLISSMIXER_NO_REPEAT_ALBUM_DESC" %]
-        <input type="number" min="0" max="200" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_album" id="no_repeat_album" value="[% prefs.no_repeat_album %]" size="5">
+        <input type="number" min="0" max="200" class="stdedit" name="pref_no_repeat_album" id="no_repeat_album" value="[% prefs.no_repeat_album %]" size="5">
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_NO_REPEAT_TRACK" desc="BLISSMIXER_NO_REPEAT_TRACK_DESC" %]
-        <input type="number" min="0" max="200" class="stdedit sliderInput_0_200_1" name="pref_no_repeat_track" id="no_repeat_track" value="[% prefs.no_repeat_track %]" size="5">
+        <input type="number" min="0" max="200" class="stdedit" name="pref_no_repeat_track" id="no_repeat_track" value="[% prefs.no_repeat_track %]" size="5">
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_MIN_DURATION" desc="BLISSMIXER_MIN_DURATION_DESC" %]
-        <input type="number" min="0" class="stdedit" name="pref_min_duration" id="min_duration" value="[% prefs.min_duration %]" size="5">
+        <input type="number" min="0" max="3600" class="stdedit" name="pref_min_duration" id="min_duration" value="[% prefs.min_duration %]" size="5">
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_MAX_DURATION" desc="BLISSMIXER_MAX_DURATION_DESC" %]
-        <input type="number" min="0" class="stdedit" name="pref_max_duration" id="max_duration" value="[% prefs.max_duration %]" size="5">
+        <input type="number" min="0" max="3600" class="stdedit" name="pref_max_duration" id="max_duration" value="[% prefs.max_duration %]" size="5">
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_MAX_BPM_DIFF" desc="BLISSMIXER_MAX_BPM_DIFF_DESC" %]
-         <input type="number" min="0" max="200" class="stdedit sliderInput_0_200_5" name="pref_max_bpm_diff" id="max_bpm_diff" value="[% prefs.max_bpm_diff %]" size="5">
+         <input type="number" min="0" max="200" class="stdedit" name="pref_max_bpm_diff" id="max_bpm_diff" value="[% prefs.max_bpm_diff %]" size="5">
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_NUM_DSTM_TRACKS" desc="BLISSMIXER_NUM_DSTM_TRACKS_DESC" %]
-        <input type="number" min="2" max="20" class="stdedit sliderInput_2_20_1" name="pref_dstm_tracks" id="dstm_tracks" value="[% prefs.dstm_tracks %]" size="5">
+        <input type="number" min="2" max="20" class="stdedit" name="pref_dstm_tracks" id="dstm_tracks" value="[% prefs.dstm_tracks %]" size="5">
         [% END %]
 
         [% WRAPPER settingGroup title="BLISSMIXER_USE_FOREST" desc="BLISSMIXER_USE_FOREST_DESC" %]
