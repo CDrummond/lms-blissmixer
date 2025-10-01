@@ -22,7 +22,7 @@ my $log = logger('plugin.blissmixer');
 # and stopped before sending FINISHED
 use constant MIN_ANALYSER_RUN_TIME => 15;
 
-# How often to check anayser
+# How often to check analyser
 use constant CHECK_ANALYSER_TIME => 60;
 
 # How often to check track count in DB
@@ -37,12 +37,13 @@ use constant DB_NAME  => "bliss.db";
 my $analyser;
 # Path to  liss-analyser that will be used on current system
 my $analyserBinary;
-# Last messaage received from analyser
+# Last message received from analyser
 my $lastAnalyserMsg = "";
 # Last time analyser was started
 my $lastAnalyserStart = 0;
 # Time check timer was last stated - so that we dont restart too often
 my $lastAnalyserCheckTimerStart = 0;
+my $analyserMode = "analyse";
 
 my $dbPath;
 my $lastTracksInDbCountTime = 0;
@@ -91,7 +92,7 @@ sub cliCommand {
          stopAnalyser("CLI");
     } elsif ($act eq 'status') {
         my $running = _checkAnalyser();
-        _countTracksInDb();
+        _countTracksInDb(0);
         $request->addResult("count", $tracksInDb);
         $request->addResult("failed", $trackFailuresInDb);
         $request->addResult("running", $running);
@@ -112,6 +113,10 @@ sub cliCommand {
             main::DEBUGLOG && $log->debug("Analysis finished successfully");
             _analysisEnded();
         }
+    } elsif ($act eq 'ignore') {
+         if (!$analyser || !$analyser->alive) {
+            startAnalyser("CLI", "ignore");
+         }
     } else {
         $request->setStatusBadParams();
         return;
@@ -124,13 +129,15 @@ sub _analysisEnded() {
         $lastAnalyserStart = 0;
         $analysisEndTime = time();
         $prefs->set('analysis_end', $analysisEndTime);
+        _countTracksInDb(1);
     }
 }
 
 sub _countTracksInDb {
+    my $force = shift;
     my $now = Time::HiRes::time();
     if (-e $dbPath) {
-        if (0==$lastTracksInDbCountTime || Time::HiRes::time()-$lastTracksInDbCountTime>=DB_TRACK_COUNT_TIME) {
+        if (1==$force || 0==$lastTracksInDbCountTime || Time::HiRes::time()-$lastTracksInDbCountTime>=DB_TRACK_COUNT_TIME) {
             eval {
                 main::DEBUGLOG && $log->debug("Count tracks in ${dbPath}");
                 my $dbh = DBI->connect( "dbi:SQLite:dbname=${dbPath}", '', '', { RaiseError => 0 });
@@ -169,7 +176,7 @@ sub _checkAnalyser {
             _startAnalyserCheckTimer();
         }
     } elsif ($lastAnalyserStart>0 && $lastAnalyserMsg ne ANALYSER_FINISHED_MSG) {
-        if ($now-$lastAnalyserStart>MIN_ANALYSER_RUN_TIME) {
+        if (($analyserMode ne "ignore") && $now-$lastAnalyserStart>MIN_ANALYSER_RUN_TIME) {
             main::DEBUGLOG && $log->debug("Restart due to not running and " . ANALYSER_FINISHED_MSG . " not received");
             startAnalyser();
         } else {
@@ -181,6 +188,8 @@ sub _checkAnalyser {
 
 sub startAnalyser {
     my $reason = shift;
+    my $mode = shift;
+
     if ($analyser && $analyser->alive) {
         main::DEBUGLOG && $log->debug("$analyserBinary already running");
     }
@@ -192,65 +201,72 @@ sub startAnalyser {
     $lastAnalyserMsg = "";
     my $prefsDir = Slim::Utils::Prefs::dir() || Slim::Utils::OSDetect::dirsFor('prefs');
     my @params = ();
+
     push @params, "--db";
     push @params, $prefsDir . "/bliss.db";
-
-    my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
-    my $numDirs = 0;
-    my @ignoreDirs = ();
-    my $idpref = $prefs->get('analyser_ignore_dirs');
-    if ($idpref) {
-        my @lines = split(/\n/, $idpref);
-        foreach my $line (@lines) {
-            push(@ignoreDirs, $line);
-        }
-    }
-    my %ignoreDirsHash = map { $_ => 1 } @ignoreDirs;
-    foreach my $dir (@$mediaDirs) {
-        if (exists $ignoreDirsHash{$dir}) {
-            main::DEBUGLOG && $log->debug("Ignoring ${dir}");
-            next;
-        }
-        if ($numDirs>0) {
-            push @params, "--music_${numDirs}";
-        } else {
-            push @params, "--music";
-        }
-        push @params, $dir;
-        $numDirs++;
-    }
-
-    if ( $prefs->get('analysis_read_tags')) {
-        push @params, "--readtags";
-    }
-    if ( $prefs->get('analysis_write_tags')) {
-        push @params, "--writetags";
-        push @params, "--preserve";
-    }
-    my $maxFiles =  $prefs->get('analyser_max_files');
-    if ($maxFiles && $maxFiles>0) {
-        push @params, "--numfiles";
-        push @params, $maxFiles;
-    }
-    push @params, "--threads";
-    my $maxThreads =  $prefs->get('analyser_max_threads');
-    if ($maxThreads && $maxThreads>0) {
-        push @params, $maxThreads;
-    } else {
-        push @params, "-1"; # => num cores -1
-    }
-    push @params, "--lms";
-    push @params, "127.0.0.1";
-    push @params, "--json";
-    push @params, $serverprefs->get('httpport');
-    push @params, "--notifs";
     push @params, "--logging";
     push @params, "error";
     push @params, "--ignore";
     my $ignoreFile = $prefsDir . "/bliss-ignore.txt";
     _writeIgnoreFile($ignoreFile);
     push @params, $ignoreFile;
-    push @params, "analyse-lms";
+
+    if ($mode eq "ignore") {
+        push @params, $mode;
+        $analyserMode = $mode;
+    } else {
+        $analyserMode = "analyse";
+        my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
+        my $numDirs = 0;
+        my @ignoreDirs = ();
+        my $idpref = $prefs->get('analyser_ignore_dirs');
+        if ($idpref) {
+            my @lines = split(/\n/, $idpref);
+            foreach my $line (@lines) {
+                push(@ignoreDirs, $line);
+            }
+        }
+        my %ignoreDirsHash = map { $_ => 1 } @ignoreDirs;
+        foreach my $dir (@$mediaDirs) {
+            if (exists $ignoreDirsHash{$dir}) {
+                main::DEBUGLOG && $log->debug("Ignoring ${dir}");
+                next;
+            }
+            if ($numDirs>0) {
+                push @params, "--music_${numDirs}";
+            } else {
+                push @params, "--music";
+            }
+            push @params, $dir;
+            $numDirs++;
+        }
+
+        if ( $prefs->get('analysis_read_tags')) {
+            push @params, "--readtags";
+        }
+        if ( $prefs->get('analysis_write_tags')) {
+            push @params, "--writetags";
+            push @params, "--preserve";
+        }
+        my $maxFiles =  $prefs->get('analyser_max_files');
+        if ($maxFiles && $maxFiles>0) {
+            push @params, "--numfiles";
+            push @params, $maxFiles;
+        }
+        push @params, "--threads";
+        my $maxThreads =  $prefs->get('analyser_max_threads');
+        if ($maxThreads && $maxThreads>0) {
+            push @params, $maxThreads;
+        } else {
+            push @params, "-1"; # => num cores -1
+        }
+        push @params, "--lms";
+        push @params, "127.0.0.1";
+        push @params, "--json";
+        push @params, $serverprefs->get('httpport');
+        push @params, "--notifs";
+        push @params, "analyse-lms";
+    }
     main::DEBUGLOG && $log->debug("Start analyser: $analyserBinary @params");
     eval { $analyser = Proc::Background->new({ 'die_upon_destroy' => 1 }, $analyserBinary, @params); };
     if ($reason && $reason eq "CLI") {

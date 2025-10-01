@@ -48,6 +48,7 @@ sub beforeRender {
     $paramRef->{'jsonrpc_url'} = "http://${host}/jsonrpc.js";
     $paramRef->{'start_analysis_text'} = string('BLISSMIXER_ANALYSE_START_BUTTON');
     $paramRef->{'stop_analysis_text'} = string('BLISSMIXER_ANALYSE_ABORT_BUTTON');
+    $paramRef->{'update_ignore_now_text'} = string('BLISSMIXER_ANALYSE_IGNORE_BUTTON');
     $paramRef->{'analysed_tracks_text'} = string('BLISSMIXER_ANALYSED_TRACKS');
     $paramRef->{'failed_tracks_text'} = string('BLISSMIXER_FAILED_TRACKS');
     $paramRef->{'analysis_status_text'} = string('BLISSMIXER_ANALYSIS_STATUS');

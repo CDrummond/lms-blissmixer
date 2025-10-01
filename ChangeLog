@@ -1,6 +1,8 @@
 0.8.2
 -----
 1. Use 'number' type for integer input fields.
+2. Count tracks when analysis completes.
+3. Add a button to update ignore, even if no tracks have been added.
 
 0.8.1
 -----

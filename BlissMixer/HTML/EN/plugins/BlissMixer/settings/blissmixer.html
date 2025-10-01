@@ -63,6 +63,7 @@
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
         <div style="opacity:0.6">[% "BLISSMIXER_ANALYSIS_SETTINGS_NOTE" | string %]</div><br/>
         <button id="analyser" onclick="toggleBlissAnalyser()" type="button" style="margin-bottom:16px"></button>
+        <button id="analyser-ignore" onclick="updateIgnore()" type="button" style="margin-left:8px;margin-bottom:16px">[% update_ignore_now_text %]</button>
         <div id="analyser-status" style="margin-top:8px"></div>
         [% END %]
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
@@ -156,6 +157,7 @@
 <script type="text/javascript">
     let statusInterval = undefined;
     let analyseButton = undefined;
+    let ignoreButton = undefined;
     let analyseStatus = undefined;
     let analyserStatusMsgCount = 0;
     let intervalDuration = 1000;
@@ -181,6 +183,21 @@
         });
     }
 
+    function updateIgnore() {
+        sendMsgToMixerPlugin('ignore').then((resp) => {
+            getAnalyserStatus();
+        });
+    }
+
+    function setHidden(elem, hidden) {
+        let hasHidden = elem.className.split(' ').includes('hidden');
+        if (hidden && !hasHidden) {
+            elem.classList.add('hidden');
+        } else if (!hidden && hasHidden) {
+            elem.classList.remove('hidden');
+        }
+    }
+
     function getAnalyserStatus() {
         sendMsgToMixerPlugin('status').then((resp) => {
             analyserStatusMsgCount++;
@@ -188,6 +205,12 @@
                 analyserIsRunning = undefined!=resp.result.running && 1==parseInt(resp.result.running);
                 if (undefined==analyseButton) {
                     analyseButton = document.getElementById('analyser');
+                }
+                if (undefined==ignoreButton) {
+                    ignoreButton = document.getElementById('analyser-ignore');
+                }
+                if (undefined!=ignoreButton) {
+                    setHidden(ignoreButton, analyserIsRunning);
                 }
                 if (undefined!=analyseButton) {
                     analyseButton.innerHTML = analyserIsRunning ? "[% stop_analysis_text %]" : "[% start_analysis_text %]";
