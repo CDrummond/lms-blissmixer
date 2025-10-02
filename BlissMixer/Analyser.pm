@@ -315,7 +315,7 @@ sub _writeIgnoreFile {
     if (-e $path) {
         unlink($path);
     }
-    if (open my $fh, ">", $path) {
+    if (open my $fh, '>:encoding(UTF-8)', $path) {
         my $ignore = $prefs->get('analyser_ignore_txt');
         if ($ignore) {
             my @lines = split(/\n/, $ignore);
