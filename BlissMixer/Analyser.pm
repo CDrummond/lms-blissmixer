@@ -318,12 +318,7 @@ sub _writeIgnoreFile {
     if (open my $fh, '>:encoding(UTF-8)', $path) {
         my $ignore = $prefs->get('analyser_ignore_txt');
         if ($ignore) {
-            my @lines = split(/\n/, $ignore);
-            foreach my $line (@lines) {
-                if (length $line > 0) {
-                    print $fh "$line\n";
-                }
-            }
+            print $fh $ignore;
         }
         close($fh);
     }
