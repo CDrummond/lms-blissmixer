@@ -55,6 +55,7 @@ sub beforeRender {
     $paramRef->{'analysis_status_text'} = string('BLISSMIXER_ANALYSIS_STATUS');
     $paramRef->{'analysis_start_text'} = string('BLISSMIXER_ANALYSIS_START_TIME');
     $paramRef->{'analysis_duration_text'} = string('BLISSMIXER_ANALYSIS_DURATION');
+    $paramRef->{'analysis_download_csv_text'} = string('BLISSMIXER_DOWNLOAD_CSV');
     my $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
     $paramRef->{'no_analyser_binary'} = !$analyserBinary;
 }
