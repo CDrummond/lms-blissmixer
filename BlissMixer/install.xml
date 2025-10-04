@@ -6,7 +6,7 @@
 	<name>BLISSMIXER</name>
 	<module>Plugins::BlissMixer::Plugin</module>
 	<importmodule>Plugins::BlissMixer::Importer</importmodule>
-	<version>0.8.1</version>
+	<version>0.8.2</version>
 	<description>BLISSMIXER_DESC</description>
 	<creator>Craig Drummond</creator>
 	<defaultState>
