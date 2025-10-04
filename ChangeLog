@@ -5,8 +5,7 @@
 3. Add button to update ignore, even if no tracks have been added.
 4. Show number of 'ignored' tracks in settings page.
 5. Use UTF-8 for ignore text file.
-6. Make failures label in settings a link to download CSV of failed tracks and
-   reasons.
+6. Add link to download CSV of failed tracks and reasons.
 7. Add button to clear failures from DB.
 
 0.8.1
