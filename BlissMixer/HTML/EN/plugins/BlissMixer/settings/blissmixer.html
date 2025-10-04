@@ -222,7 +222,7 @@
                     let count = undefined!=resp.result.count ? parseInt(resp.result.count) : 0;
                     let analysed = "<tr><td>[% analysed_tracks_text %]</td><td>"+count+"</td></tr>";
                     let fcount = undefined!=resp.result.failed ? parseInt(resp.result.failed) : 0;
-                    let failed = fcount > 0 ? "<tr><td>[% failed_tracks_text %]</td><td>"+fcount+"</td></tr>" : undefined;
+                    let failed = fcount > 0 ? "<tr><td><a href=\"blissmixer/analyser-failures.csv\" target=\"_blank\">[% failed_tracks_text %]</a></td><td>"+fcount+"</td></tr>" : undefined;
                     let icount = undefined!=resp.result.ignored ? parseInt(resp.result.ignored) : 0;
                     let ignored = icount > 0 ? "<tr><td>[% ignored_tracks_text %]</td><td>"+icount+"</td></tr>" : undefined;
                     let status = analyserIsRunning && undefined!=resp.result.msg ? "<tr><td>[% analysis_status_text %]</td><td>"+resp.result.msg+"</td></tr>" : undefined;

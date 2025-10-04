@@ -13,10 +13,13 @@ use strict;
 use Slim::Utils::Log;
 use Slim::Utils::Misc;
 use Slim::Utils::Prefs;
+use HTTP::Status qw(RC_NOT_FOUND RC_OK);
 
 my $prefs = preferences('plugin.blissmixer');
 my $serverprefs = preferences('server');
 my $log = logger('plugin.blissmixer');
+
+my $FAILURE_URL_RE = qr{blissmixer/analyser-failures\.csv}i;
 
 # Only auto restart analyser if it was running for over X seconds
 # and stopped before sending FINISHED
@@ -75,6 +78,7 @@ sub init {
     if ($analysisEndTimeCfg) {
         $analysisEndTime = $analysisEndTimeCfg;
     }
+    Slim::Web::Pages->addRawFunction($FAILURE_URL_RE, \&_failuresHandler);
 }
 
 sub cliCommand {
@@ -330,6 +334,58 @@ sub _writeIgnoreFile {
         }
         close($fh);
     }
+}
+
+sub _arrayToCsv {
+    my @fields = @_;
+    my @escaped;
+
+    foreach my $field (@fields) {
+        # Convert undef to empty string
+        $field = '' unless defined $field;
+
+        # Escape double quotes by doubling them
+        $field =~ s/"/""/g;
+
+        # If the field contains special CSV characters, wrap it in double quotes
+        if ($field =~ /[",\r\n]/) {
+            $field = qq{"$field"};
+        }
+
+        push @escaped, $field;
+    }
+
+    # Join fields with commas
+    return join(',', @escaped);
+}
+
+sub _failuresHandler {
+    my ( $httpClient, $response ) = @_;
+    return unless $httpClient->connected;
+
+    my $request = $response->request;
+
+    my @lines = ();
+    eval {
+        my $dbh = DBI->connect( "dbi:SQLite:dbname=${dbPath}", '', '', { RaiseError => 0 });
+        my $sth = $dbh->prepare( "SELECT File, Reason FROM Failures" );
+        $sth->execute();
+        while (my @row = $sth->fetchrow_array) {
+            my @vals = ($row[0], $row[1]);
+            push(@lines, _arrayToCsv(@vals));
+        }
+        $sth->finish();
+        $dbh->disconnect();
+    };
+    my $csv = join("\n", @lines);
+
+    $response->code(RC_OK);
+    $response->content_type('text/csv');
+    $response->header('Connection' => 'close');
+    $response->content($csv);
+    $httpClient->send_response($response);
+    Slim::Web::HTTP::closeHTTPSocket($httpClient);
+
 }
 
 1;
