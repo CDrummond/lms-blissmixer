@@ -322,7 +322,7 @@ sub _writeIgnoreFile {
             foreach my $line (@lines) {
                 # Trim leading and trailing whitespace
                 $line =~ s/^\\s+|\\s+$//g;
-                # Enure non-empty
+                # Ensure non-empty
                 if (length $line > 0) {
                     print $fh "$line\n";
                 }
