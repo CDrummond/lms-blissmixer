@@ -192,6 +192,9 @@ BLISSMIXER_ANALYSE_ABORT_BUTTON
 BLISSMIXER_ANALYSE_IGNORE_BUTTON
 	EN	Update 'ignore' now
 
+BLISSMIXER_ANALYSE_CLEAR_FAILURES_BUTTON
+	EN	Clear Failures
+
 BLISSMIXER_ANALYSE_READ_TAGS
 	EN	Read results from files
 
@@ -239,6 +242,9 @@ BLISSMIXER_ANALYSIS_DURATION
 
 BLISSMIXER_ANALYSIS_SETTINGS_NOTE
 	EN	If you update any of the above settings then you will need to save these <i>before</i> starting analysis.<br/><br/>When an anlysis is running you will see some progress information below the 'Start Analysis' button. This will show the time elapsed and the names of some files. Files will not be displayed in order, as the list of files to analyse is split into chunks and processed in parallel. This output, therefore, is only to indicate that <i>something</i> is happening.<br/><br/>If you have updated the contents of the 'Ignore tracks' setting (above), saved settings, but have no new tracks, then you can use the 'Update ignore now' button to have the analyser update the ignore tracks column in its database.<br/><br/>
+
+BLISSMIXER_ANALYSIS_FAILURES_NOTE
+	EN	If the analyser fails to analyse files these failures are recorded in the database, so that these files are ignored (unless the files have been modified) on subsequent runs. The 'Clear Failures' button may be used to remove these records, so that the files are then re-analysed the next time you run the analyser.<br/><br/>
 
 BLISSMIXER_ANALYSER_MAX_FILES
 	EN	Maximum files to analyse

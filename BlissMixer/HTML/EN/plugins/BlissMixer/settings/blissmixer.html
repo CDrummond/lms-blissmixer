@@ -61,9 +61,11 @@
         <input type="number" min="-4" max="256" class="stdedit" name="pref_analyser_max_threads" id="analyser_max_threads" value="[% prefs.analyser_max_threads %]" size="5">
         [% END %]
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
-        <div style="opacity:0.6">[% "BLISSMIXER_ANALYSIS_SETTINGS_NOTE" | string %]</div><br/>
+        <div style="opacity:0.6">[% "BLISSMIXER_ANALYSIS_SETTINGS_NOTE" | string %]</div>
+        <div id="analyser-failures-note" style="opacity:0.6">[% "BLISSMIXER_ANALYSIS_FAILURES_NOTE" | string %]</div>
         <button id="analyser" onclick="toggleBlissAnalyser()" type="button" style="margin-bottom:16px"></button>
         <button id="analyser-ignore" onclick="updateIgnore()" type="button" style="margin-left:8px;margin-bottom:16px">[% update_ignore_now_text %]</button>
+        <button id="analyser-clearfailures" onclick="clearFailures()" type="button" style="margin-left:8px;margin-bottom:16px">[% clear_failures_text %]</button>
         <div id="analyser-status" style="margin-top:8px"></div>
         [% END %]
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
@@ -158,6 +160,8 @@
     let statusInterval = undefined;
     let analyseButton = undefined;
     let ignoreButton = undefined;
+    let clearfailuresButton = undefined;
+    let failuresNote = undefined;
     let analyseStatus = undefined;
     let analyserStatusMsgCount = 0;
     let intervalDuration = 1000;
@@ -185,6 +189,12 @@
 
     function updateIgnore() {
         sendMsgToMixerPlugin('ignore').then((resp) => {
+            getAnalyserStatus();
+        });
+    }
+
+    function clearFailures() {
+        sendMsgToMixerPlugin('clearfailures').then((resp) => {
             getAnalyserStatus();
         });
     }
@@ -218,10 +228,11 @@
                 if (undefined==analyseStatus) {
                     analyseStatus = document.getElementById('analyser-status');
                 }
+                let fcount = 0;
                 if (undefined!=analyseStatus) {
                     let count = undefined!=resp.result.count ? parseInt(resp.result.count) : 0;
                     let analysed = "<tr><td>[% analysed_tracks_text %]</td><td>"+count+"</td></tr>";
-                    let fcount = undefined!=resp.result.failed ? parseInt(resp.result.failed) : 0;
+                    fcount = undefined!=resp.result.failed ? parseInt(resp.result.failed) : 0;
                     let failed = fcount > 0 ? "<tr><td>[% failed_tracks_text %]</td><td>"+fcount+" (<a href=\"blissmixer/analyser-failures.csv\" target=\"_blank\">[% analysis_download_csv_text %]</a>)</td></tr>" : undefined;
                     let icount = undefined!=resp.result.ignored ? parseInt(resp.result.ignored) : 0;
                     let ignored = icount > 0 ? "<tr><td>[% ignored_tracks_text %]</td><td>"+icount+"</td></tr>" : undefined;
@@ -257,6 +268,18 @@
                     }
                     msg += "</table>";
                     analyseStatus.innerHTML = msg;
+                }
+                if (undefined==clearfailuresButton) {
+                    clearfailuresButton = document.getElementById('analyser-clearfailures');
+                }
+                if (undefined!=clearfailuresButton) {
+                    setHidden(clearfailuresButton, analyserIsRunning || fcount<=0);
+                }
+                if (undefined==failuresNote) {
+                    failuresNote = document.getElementById('analyser-failures-note');
+                }
+                if (undefined!=failuresNote) {
+                    setHidden(failuresNote, fcount<=0);
                 }
             }
             if (analyserIsRunning && intervalDuration>1000) {

@@ -123,6 +123,11 @@ sub cliCommand {
          if (!$analyser || !$analyser->alive) {
             startAnalyser("CLI", "ignore");
          }
+    } elsif ($act eq 'clearfailures') {
+         if (!$analyser || !$analyser->alive) {
+            _clearFailures();
+            _countTracksInDb(1);
+         }
     } else {
         $request->setStatusBadParams();
         return;
@@ -170,6 +175,19 @@ sub _countTracksInDb {
         $tracksInDb = 0;
         $ignoredTracksInDb = 0;
         $trackFailuresInDb = 0;
+    }
+}
+
+sub _clearFailures {
+    if (-e $dbPath) {
+        eval {
+            main::DEBUGLOG && $log->debug("Clear failures in ${dbPath}");
+            my $dbh = DBI->connect( "dbi:SQLite:dbname=${dbPath}", '', '', { RaiseError => 0 });
+            my $sth = $dbh->prepare( "DELETE FROM Failures" );
+            $sth->execute();
+            $sth->finish();
+            $dbh->disconnect();
+        }
     }
 }
 
