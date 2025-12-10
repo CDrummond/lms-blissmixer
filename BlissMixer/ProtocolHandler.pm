@@ -63,6 +63,13 @@ sub _handleResp {
         }
     } else {
         main::DEBUGLOG && $log->debug("No tracks?");
+        if (exists $INC{'Plugins/LastMix/ProtocolHandler.pm'}) {
+            my $artist = $params->{artist};
+            if ($artist) {
+                main::DEBUGLOG && $log->debug("Try lastmix");
+                $client->execute(["lastmix", "play", "artist:${artist}"]);
+            }
+        }
     }
 }
 
@@ -118,6 +125,12 @@ sub overridePlayback {
         push @$command, "artist_id:$artistId";
     } else {
         main::DEBUGLOG && $log->debug("No ID found?");
+        if (exists $INC{'Plugins/LastMix/ProtocolHandler.pm'}) {
+            if ($artist) {
+                main::DEBUGLOG && $log->debug("Try lastmix");
+                $client->execute(["lastmix", "play", "artist:${artist}"]);
+            }
+        }
         return;
     }
 

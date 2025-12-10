@@ -1,3 +1,8 @@
+0.8.3
+-----
+1. If 'blissmixer://' protocol handler is called with an artist and this fails
+   then try with 'lastmix'
+
 0.8.2
 -----
 1. Use 'number' type for integer input fields.
