@@ -3,7 +3,7 @@ package Plugins::BlissMixer::Settings;
 #
 # LMS Bliss Mixer
 #
-# (c) 2022-2025 Craig Drummond
+# (c) 2022-2026 Craig Drummond
 #
 # Licence: GPL v3
 #
