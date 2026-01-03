@@ -122,6 +122,10 @@
         <textarea class="stdedit" name="pref_genre_groups" id="genre_groups" cols="80" rows="5">[% prefs.genre_groups %]</textarea>
         [% END %]
 
+        [% WRAPPER settingGroup title="BLISSMIXER_MATCH_ALL_GENRES" desc="BLISSMIXER_MATCH_ALL_GENRES_DESC" %]
+        <input type="checkbox" name="pref_match_all_genres" id="match_all_genres" [% IF prefs.match_all_genres %] checked [% END %] value="1"/>
+        [% END %]
+
         [% WRAPPER settingGroup title="BLISSMIXER_USE_TRACK_GENRE" desc="BLISSMIXER_USE_TRACK_GENRE_DESC" %]
         <input type="checkbox" name="pref_use_track_genre" id="use_track_genre" [% IF prefs.use_track_genre %] checked [% END %] value="1"/>
         [% END %]

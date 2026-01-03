@@ -100,7 +100,8 @@ sub initPlugin {
         analysis_read_tags => 0,
         analysis_write_tags => 0,
         analyser_max_files => 0,
-        analyser_max_threads => 0
+        analyser_max_threads => 0,
+        match_all_genres => 0
     });
 
     $prefs->setChange(\&Plugins::BlissMixer::Importer::toggleUseImporter, 'run_analyser_after_scan');
@@ -1145,7 +1146,8 @@ sub _getMixData {
                         norepart    => int($prefs->get('no_repeat_artist')),
                         norepalb    => int($prefs->get('no_repeat_album')),
                         forest      => int($prefs->get('use_forest') || 0),
-                        genregroups => _genreGroups()
+                        genregroups => _genreGroups(),
+                        allgenres   => int($prefs->get('match_all_genres') || 0)
                     });
     main::DEBUGLOG && $log->debug("Request $jsonData");
     return $jsonData;
@@ -1166,6 +1168,7 @@ sub _getListData {
                         maxbpmdiff  => int($prefs->get('max_bpm_diff') || 0),
                         track       => _trackToPath($mediaDirs, $seedTrack),
                         genregroups => _genreGroups(),
+                        allgenres   => int($prefs->get('match_all_genres') || 0),
                         byartist    => int($byArtist)
                     });
 

@@ -269,3 +269,9 @@ BLISSMIXER_MIX_SETTINGS
 
 BLISSMIXER_MIX_SETTINGS_NOTE
 	EN	The following settings control how tracks are selected for mixes.
+
+BLISSMIXER_MATCH_ALL_GENRES
+	EN	Match all genres
+
+BLISSMIXER_MATCH_ALL_GENRES_DESC
+	EN	When checking if a track is in a genre group check all of the track's genres are in the group (if this option is enabled), otherwise check that any of the track's genres are in a group. e.g. if you have a group "Metal;Rock;Vocal" then if this option is set then a track with "Hard Rock;Vocal" would not match. If this option is not set then it would.
