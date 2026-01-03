@@ -95,7 +95,7 @@ sub initPlugin {
         weight_chroma    => 57,
         max_bpm_diff     => 0,
         use_track_genre  => 0,
-        use_forest       => 0,
+        use_forest       => 1,
         run_analyser_after_scan => 0,
         analysis_read_tags => 0,
         analysis_write_tags => 0,
