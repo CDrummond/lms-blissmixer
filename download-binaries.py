@@ -7,7 +7,7 @@
 # MIT license.
 #
 
-import datetime, hashlib, os, requests, shutil, subprocess, tempfile, time
+import datetime, hashlib, os, requests, shutil, subprocess, sys, tempfile, time
 
 PLUGIN_NAME = "BlissMixer"
 GITHUB_TOKEN_FILE = "%s/.config/github-token" % os.path.expanduser('~')
@@ -119,5 +119,7 @@ def download_artifacts(repo, artifacts):
         info("No changes")
 
 
-download_artifacts(MIXER_GITHUB_REPO, MIXER_GITHUB_ARTIFACTS)
-download_artifacts(ANALYSER_GITHUB_REPO, ANALYSER_GITHUB_ARTIFACTS)
+if len(sys.argv)<2 or sys.argv[1]=='mixer':
+    download_artifacts(MIXER_GITHUB_REPO, MIXER_GITHUB_ARTIFACTS)
+if len(sys.argv)<2 or sys.argv[1]=='analyser':
+    download_artifacts(ANALYSER_GITHUB_REPO, ANALYSER_GITHUB_ARTIFACTS)
