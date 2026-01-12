@@ -250,10 +250,11 @@ sub startAnalyser {
         my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
         my $numDirs = 0;
         my @ignoreDirs = ();
-        my $idpref = $prefs->get('analyser_ignore_dirs');
-        if ($idpref) {
-            my @lines = split(/\n/, $idpref);
+        my $ignorePref = $prefs->get('analyser_ignore_dirs');
+        if ($ignorePref) {
+            my @lines = split(/\n/, $ignorePref);
             foreach my $line (@lines) {
+                $line =~ s/\R//g;
                 push(@ignoreDirs, $line);
             }
         }

@@ -5,6 +5,7 @@
 2. Add option to configure how a track's genre is considered to be in a group;
    either all of a track's genres must be in the group, or any of a track's
    genres are in the group.
+3. Fix excluding multiple folders.
 
 0.8.2
 -----
