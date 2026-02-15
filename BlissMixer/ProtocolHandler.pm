@@ -102,14 +102,14 @@ sub overridePlayback {
     my $album = $params->{album};
     my $count = $params->{count};
     if ($path) {
-        $trackId = _getId($dbh, "SELECT id FROM tracks WHERE url = ? LIMIT 1", $path);
+        $trackId = _getId($dbh, "SELECT id FROM tracks WHERE url = ? COLLATE NOCASE LIMIT 1", $path);
     } elsif ($genre) {
-        $genreId = _getId($dbh, "SELECT id FROM genres WHERE name = ? LIMIT 1", $genre);
+        $genreId = _getId($dbh, "SELECT id FROM genres WHERE name = ? COLLATE NOCASE LIMIT 1", $genre);
     } else {
         if ($artist) {
-            $artistId = _getId($dbh, "SELECT id FROM contributors WHERE name = ? LIMIT 1", $artist );
+            $artistId = _getId($dbh, "SELECT id FROM contributors WHERE name = ? COLLATE NOCASE LIMIT 1", $artist );
             if ($album && $artistId) {
-                $albumId = _getId($dbh, "SELECT id FROM albums WHERE title = ? AND contributor=${artistId} LIMIT 1", $album );
+                $albumId = _getId($dbh, "SELECT id FROM albums WHERE title = ? COLLATE NOCASE AND contributor=${artistId} LIMIT 1", $album );
             }
         }
     }
