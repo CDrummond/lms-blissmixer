@@ -102,8 +102,12 @@
         <input type="number" min="2" max="20" class="stdedit" name="pref_dstm_tracks" id="dstm_tracks" value="[% prefs.dstm_tracks %]" size="5">
         [% END %]
 
-        [% WRAPPER settingGroup title="BLISSMIXER_USE_FOREST" desc="BLISSMIXER_USE_FOREST_DESC" %]
-        <input type="checkbox" name="pref_use_forest" id="use_forest" [% IF prefs.use_forest %] checked [% END %] value="1"/>
+        [% WRAPPER settingGroup title="BLISSMIXER_MIX_ALGORITHM" desc="BLISSMIXER_MIX_ALGORITHM_DESC" %]
+        <input type="hidden" name="pref_use_forest" id="use_forest" value="[% IF prefs.use_forest %]1[% ELSE %]0[% END %]"/>
+        <input type="hidden" name="pref_use_adaptive_weights" id="use_adaptive_weights" value="[% IF prefs.use_adaptive_weights %]1[% ELSE %]0[% END %]"/>
+        <label style="display:block;margin:2px 0"><input type="radio" name="mix_algorithm" value="static" [% IF !prefs.use_forest && !prefs.use_adaptive_weights %] checked [% END %] onchange="updateMixAlgorithm()"/> [% "BLISSMIXER_ALG_STATIC" | string %]</label>
+        <label style="display:block;margin:2px 0"><input type="radio" name="mix_algorithm" value="forest" [% IF prefs.use_forest && !prefs.use_adaptive_weights %] checked [% END %] onchange="updateMixAlgorithm()"/> [% "BLISSMIXER_ALG_FOREST" | string %]</label>
+        <label style="display:block;margin:2px 0"><input type="radio" name="mix_algorithm" value="adaptive" [% IF prefs.use_adaptive_weights %] checked [% END %] onchange="updateMixAlgorithm()"/> [% "BLISSMIXER_ALG_DYNAMIC" | string %]</label>
         [% END %]
 
         <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
@@ -155,7 +159,31 @@
         [% WRAPPER settingGroup title="BLISSMIXER_METRIC_CHROMA" %]
         <input type="number" min="1" max="100" class="stdedit sliderInput_1_100_1" name="pref_weight_chroma" id="weight_chroma" value="[% prefs.weight_chroma %]" size="5">
         [% END %]
+
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+        <b style="font-size:120%">[% "BLISSMIXER_DYNAMIC_SECTION" | string %]</b><br/><br/>
+        <div style="opacity:0.6">[% "BLISSMIXER_DYNAMIC_SECTION_NOTE" | string %]</div><br/>
+
+        [% WRAPPER settingGroup title="BLISSMIXER_NUM_SEED_TRACKS" desc="BLISSMIXER_NUM_SEED_TRACKS_DESC" %]
+        <input type="number" min="2" max="25" class="stdedit" name="pref_num_seed_tracks" id="num_seed_tracks" value="[% prefs.num_seed_tracks %]" size="5">
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_SEED_STRICT_ORDER" desc="BLISSMIXER_SEED_STRICT_ORDER_DESC" %]
+        <input type="checkbox" name="pref_seed_strict_order" id="seed_strict_order" [% IF prefs.seed_strict_order %] checked [% END %] value="1"/>
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_LASTFM_WEIGHTING" desc="BLISSMIXER_LASTFM_WEIGHTING_DESC" %]
+        <input type="checkbox" name="pref_use_lastfm_weighting" id="use_lastfm_weighting" [% IF prefs.use_lastfm_weighting %] checked [% END %] value="1" [% UNLESS lastmix_available %] disabled [% END %] onchange="updateLastFmWeight()"/>
+        [% UNLESS lastmix_available %]<div style="opacity:0.6;margin-top:4px">[% "BLISSMIXER_LASTFM_WEIGHTING_UNAVAILABLE" | string %]</div>[% END %]
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_LASTFM_WEIGHTING_WEIGHT" desc="BLISSMIXER_LASTFM_WEIGHTING_WEIGHT_DESC" %]
+        <input type="number" min="1" max="100" class="stdedit sliderInput_1_100_1" name="pref_lastfm_weighting_weight" id="lastfm_weighting_weight" value="[% prefs.lastfm_weighting_weight %]" size="5" [% UNLESS lastmix_available %] disabled [% END %]>
+        [% END %]
+
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
         </div>
+
     [% END %]
 
 [% PROCESS settings/footer.html %]
@@ -328,9 +356,27 @@
         }
     }
 
+    function updateMixAlgorithm() {
+        let selected = document.querySelector('input[name="mix_algorithm"]:checked');
+        if (selected) {
+            document.getElementById('use_forest').value = selected.value === 'forest' ? '1' : '0';
+            document.getElementById('use_adaptive_weights').value = selected.value === 'adaptive' ? '1' : '0';
+        }
+    }
+
+    function updateLastFmWeight() {
+        let cb = document.getElementById('use_lastfm_weighting');
+        let numInput = document.getElementById('lastfm_weighting_weight');
+        let rangeInput = document.getElementById('mskslider.lastfm_weighting_weight');
+        let enabled = cb && cb.checked && !cb.disabled;
+        if (numInput) numInput.disabled = !enabled;
+        if (rangeInput) rangeInput.disabled = !enabled;
+    }
+
     window.addEventListener("load",() => {
         statusInterval = setInterval(getAnalyserStatus, 1000);
         getAnalyserStatus();
+        updateLastFmWeight();
         try {
             if (undefined!=window.localStorage) {
                 ["mixer-section", "analyser-section"].forEach(sect => {
@@ -341,4 +387,5 @@
         } catch (e) {
         }
     });
+
 </script>

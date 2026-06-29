@@ -159,11 +159,53 @@ BLISSMIXER_MAX_BPM_DIFF
 BLISSMIXER_MAX_BPM_DIFF_DESC
 	EN	Maximum difference between BPM of seed track and candidate tracks. Set to 0 for no maximum.
 
-BLISSMIXER_USE_FOREST
+BLISSMIXER_MIX_ALGORITHM
+	EN	Mixing strategy
+
+BLISSMIXER_MIX_ALGORITHM_DESC
+	EN	<b>Metric weightings:</b> Finds similar tracks based on the four metric weight sliders (Tempo, Timbre, Loudness, Chroma). Best when you know which audio characteristics matter most.<br/><br/><b>Extended isolation forest:</b> Trains a statistical model on the seed tracks and scores candidates by how well they fit the pattern. No manual tuning needed; requires at least 4 seeds.<br/><br/><b>Adaptive weightings:</b> Automatically discovers which characteristics the seed tracks have in common and emphasises those when searching.
+
+BLISSMIXER_ALG_STATIC
+	EN	Metric weightings
+
+BLISSMIXER_ALG_FOREST
 	EN	Extended isolation forest
 
-BLISSMIXER_USE_FOREST_DESC
-	EN	When using more 4 (or more) seed tracks, use <a href="https://en.wikipedia.org/wiki/Isolation_forest" target="_blank">extended isolation forest</a> to locate similar tracks to the seeds.
+BLISSMIXER_ALG_DYNAMIC
+	EN	Adaptive weightings
+
+BLISSMIXER_DYNAMIC_SECTION
+	EN	Adaptive weightings
+
+BLISSMIXER_DYNAMIC_SECTION_NOTE
+	EN	Discovers which audio characteristics the seed tracks have in common and automatically emphasises those when searching. Feature weights are derived from the variance across seed tracks — characteristics that are consistent across all seeds receive a higher weight.
+
+BLISSMIXER_NUM_SEED_TRACKS
+	EN	Number of seed tracks
+
+BLISSMIXER_NUM_SEED_TRACKS_DESC
+	EN	How many recent tracks to use as seeds for the adaptive weighting strategy. Fewer seeds give sharper, more focused weights. More seeds capture broader context but produce blurrier weights. Default: 3.
+
+BLISSMIXER_SEED_STRICT_ORDER
+	EN	Use most recent tracks as seeds
+
+BLISSMIXER_SEED_STRICT_ORDER_DESC
+	EN	When enabled, always use the last N tracks from the play queue as seeds, preserving their order. When disabled, seeds are randomly sampled from a larger pool of recent tracks.
+
+BLISSMIXER_LASTFM_WEIGHTING
+	EN	Last.fm artist weighting
+
+BLISSMIXER_LASTFM_WEIGHTING_DESC
+	EN	Helps reduce genre drift in heterogeneous libraries while still allowing acoustically similar tracks from unknown artists to be selected. When enabled, a larger pool of bliss candidates is fetched and tracks from Last.fm-endorsed artists are given a higher selection probability (weighted random sampling). Requires the LastMix plugin to be installed with a configured Last.fm account.
+
+BLISSMIXER_LASTFM_WEIGHTING_UNAVAILABLE
+	EN	Requires the LastMix plugin to be installed and enabled.
+
+BLISSMIXER_LASTFM_WEIGHTING_WEIGHT
+	EN	Last.fm artist probability
+
+BLISSMIXER_LASTFM_WEIGHTING_WEIGHT_DESC
+	EN	Target percentage of chosen tracks that should come from Last.fm-endorsed artists. For example, 25 means roughly one endorsed artist in every four selected tracks, when enough endorsed and non-endorsed candidates are available. Default: 25.
 
 BLISSMIXER_USE_TRACK_GENRE
 	EN	Use track genre
