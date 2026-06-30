@@ -196,7 +196,7 @@ BLISSMIXER_LASTFM_WEIGHTING
 	EN	Last.fm artist weighting
 
 BLISSMIXER_LASTFM_WEIGHTING_DESC
-	EN	Helps reduce genre drift in heterogeneous libraries while still allowing acoustically similar tracks from unknown artists to be selected. When enabled, a larger pool of bliss candidates is fetched and tracks from Last.fm-endorsed artists are given a higher selection probability (weighted random sampling). Requires the LastMix plugin to be installed with a configured Last.fm account.
+	EN	Helps reduce genre drift in heterogeneous libraries while still allowing acoustically similar tracks from unknown artists to be selected. When enabled, a larger pool of bliss candidates is fetched and tracks from Last.fm-endorsed artists are given a higher selection probability (weighted random sampling). Requires the LastMix plugin to be installed and enabled.
 
 BLISSMIXER_LASTFM_WEIGHTING_UNAVAILABLE
 	EN	Requires the LastMix plugin to be installed and enabled.
