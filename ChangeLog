@@ -1,3 +1,8 @@
+0.10.0
+------
+1. Add adaptive weighting strategy with optional Last.fm artist context. Thanks
+   to chrober for impementing.
+
 0.9.1
 -----
 1. Fix detecting of radio station as last iten in queue.
