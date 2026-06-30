@@ -96,6 +96,11 @@ sub initPlugin {
         max_bpm_diff     => 0,
         use_track_genre  => 0,
         use_forest       => 1,
+        use_adaptive_weights => 0,
+        num_seed_tracks  => 3,
+        seed_strict_order => 1,
+        use_lastfm_weighting => 0,
+        lastfm_weighting_weight => 25,
         run_analyser_after_scan => 0,
         analysis_read_tags => 0,
         analysis_write_tags => 0,
@@ -182,6 +187,15 @@ sub _initBinaries {
         Slim::Utils::Misc::addFindBinPaths(catdir($dir, 'Bin', 'windows'));
     } elsif (main::ISMAC) {
         Slim::Utils::Misc::addFindBinPaths(catdir($dir, 'Bin', 'mac'));
+    } else {
+        my @linuxPaths = (
+            catdir($dir, 'Bin', 'x86_64-linux'),
+            catdir($dir, 'Bin', 'aarch64-linux'),
+            catdir($dir, 'Bin', 'armhf-linux'),
+        );
+        for my $p (@linuxPaths) {
+            Slim::Utils::Misc::addFindBinPaths($p);
+        }
     }
     $mixerBinary = Slim::Utils::Misc::findbin('bliss-mixer');
     main::INFOLOG && $log->info("Mixer: ${mixerBinary}");
@@ -494,21 +508,22 @@ sub _confirmMixerStarted {
 }
 
 sub _getMixableProperties {
-    my ($client, $count) = @_;
+    my ($client, $count, $strict) = @_;
 
     return unless $client;
 
     $client = $client->master;
 
     my ($trackId, $artist, $title, $duration);
-    my $tracks = ();
-    my $durationFilteredTracks = ();
+    my $tracks = [];
+    my $durationFilteredTracks = [];
     my $pos = 0;
     my $minDuration = int($prefs->get('min_duration') || 0);
     my $maxDuration = int($prefs->get('max_duration') || 0);
     my $minCount = $count && $count>4 ? $count-2 : $count;
+    my $collectLimit = $strict ? $count : ($count * 2);
 
-    # Get last count*2 tracks from queue
+    # Get last tracks from queue (strict: exactly count, otherwise count*2)
     foreach (reverse @{ Slim::Player::Playlist::playList($client) } ) {
         ($artist, $title, $duration, $trackId) = Slim::Plugin::DontStopTheMusic::Plugin->getMixablePropertiesFromTrack($client, $_);
 
@@ -526,7 +541,7 @@ sub _getMixableProperties {
         }
 
         push @$tracks, $trackId;
-        if ($count && scalar @$tracks > ($count * 2)) {
+        if ($count && scalar @$tracks >= $collectLimit) {
             last;
         }
     }
@@ -542,7 +557,9 @@ sub _getMixableProperties {
     }
 
     if (scalar @$tracks) {
-        main::INFOLOG && $log->info("Auto-mixing from random tracks in current playlist");
+        main::INFOLOG && $log->info($strict
+            ? "Using last " . scalar(@$tracks) . " tracks from current playlist"
+            : "Auto-mixing from random tracks in current playlist");
 
         if ($count && scalar @$tracks > $count) {
             Slim::Player::Playlist::fischer_yates_shuffle($tracks);
@@ -731,7 +748,7 @@ sub _callApi {
     Slim::Networking::SimpleAsyncHTTP->new(
         sub {
             my $response = shift;
-            main::DEBUGLOG && $log->debug("Received API response ");
+            main::DEBUGLOG && $log->debug("Received API response: " . ($response->headers->header('X-Bliss-Debug') || $response->content));
 
             my @songs = split(/\n/, $response->content);
             my $count = scalar @songs;
@@ -996,8 +1013,12 @@ sub _dstmMix {
 
     main::DEBUGLOG && $log->debug("Get tracks");
     my $useForest = $prefs->get('use_forest') || 0;
-    my $numSeedTracks = $useForest ? NUM_FOREST_SEED_TRACKS : NUM_SEED_TRACKS;
-    my $seedTracks = _getMixableProperties($client, $numSeedTracks); # Slim::Plugin::DontStopTheMusic::Plugin->getMixableProperties($client, NUM_SEED_TRACKS);
+    my $useAdaptiveWeights = $prefs->get('use_adaptive_weights') || 0;
+    my $numSeedTracks = $useAdaptiveWeights
+        ? ($prefs->get('num_seed_tracks') || 3)
+        : ($useForest ? NUM_FOREST_SEED_TRACKS : NUM_SEED_TRACKS);
+    my $strictSeeds = $useAdaptiveWeights && ($prefs->get('seed_strict_order') // 1);
+    my $seedTracks = _getMixableProperties($client, $numSeedTracks, $strictSeeds);
 
     # don't seed from radio stations - only do if we're playing from some track based source
     # Get list of valid seeds...
@@ -1019,32 +1040,166 @@ sub _dstmMix {
         }
 
         if (scalar @seedsToUse > 0) {
+            if (main::DEBUGLOG) {
+                my $strategy;
+                if ($useAdaptiveWeights) {
+                    my $lfm = $prefs->get('use_lastfm_weighting') && exists $INC{'Plugins/LastMix/LFM.pm'};
+                    my @details = ('variance-based');
+                    push @details, 'Last.fm enabled' if $lfm;
+                    $strategy = 'adaptive weighting (' . join(', ', @details) . ')';
+                } elsif ($useForest) {
+                    $strategy = 'extended isolation forest';
+                } else {
+                    $strategy = 'static weights';
+                }
+                $log->debug("Mixing strategy: $strategy");
+            }
+
+            my $dstm_tracks = $prefs->get('dstm_tracks') || DEF_NUM_DSTM_TRACKS;
+            my $lastfmWeighting = $useAdaptiveWeights && $prefs->get('use_lastfm_weighting')
+                && exists $INC{'Plugins/LastMix/LFM.pm'};
+            my $requestCount = $lastfmWeighting ? $dstm_tracks * 10 : $dstm_tracks;
+            my $shuffle = $lastfmWeighting ? 0 : 1;
+            # Inflate norepart/norepalb to cover the full pool so the sliding window
+            # in bliss-mixer never scrolls past a recently-played artist/album as the
+            # large output list is built up (formula: user_setting + requestCount - 1)
+            my ($noRepArtOverride, $noRepAlbOverride);
+            if ($lastfmWeighting) {
+                my $noRepArt = int($prefs->get('no_repeat_artist') || 0);
+                my $noRepAlb = int($prefs->get('no_repeat_album') || 0);
+                $noRepArtOverride = $noRepArt > 0 ? $noRepArt + $requestCount - 1 : undef;
+                $noRepAlbOverride = $noRepAlb > 0 ? $noRepAlb + $requestCount - 1 : undef;
+            }
+
             my $maxNumPrevTracks = $prefs->get('no_repeat_track');
             if ($maxNumPrevTracks<0 || $maxNumPrevTracks>MAX_PREVIOUS_TRACKS) {
                 $maxNumPrevTracks = DEF_MAX_PREVIOUS_TRACKS;
             }
-            my $previousTracks = _getPreviousTracks($client, $maxNumPrevTracks);
+            # When Last.fm weighting inflates norepart, ensure we fetch enough previous
+            # tracks to populate that window — otherwise bliss-mixer receives an empty
+            # previous list and artist-repeat filtering has no context to work from.
+            my $prevFetchCount = $maxNumPrevTracks;
+            $prevFetchCount = $noRepArtOverride if defined $noRepArtOverride && $noRepArtOverride > $prevFetchCount;
+            $prevFetchCount = $noRepAlbOverride if defined $noRepAlbOverride && $noRepAlbOverride > $prevFetchCount;
+            my $previousTracks = _getPreviousTracks($client, $prevFetchCount);
             main::DEBUGLOG && $log->debug("Num tracks to previous: " . ($previousTracks ? scalar(@$previousTracks) : 0));
 
-            my $dstm_tracks = $prefs->get('dstm_tracks') || DEF_NUM_DSTM_TRACKS;
-            my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $dstm_tracks, 1, $filterGenres);
+            # Collect comparison seeds for "what-if" logging (debug only, adaptive weights only)
+            my @staticCompSeeds = ();
+            my @eifCompSeeds = ();
+            if ($log->is_debug && $useAdaptiveWeights) {
+                my $staticSeedTracks = _getMixableProperties($client, NUM_SEED_TRACKS, 0);
+                if ($staticSeedTracks && ref $staticSeedTracks) {
+                    foreach my $st (@$staticSeedTracks) {
+                        my ($obj) = Slim::Schema->find('Track', $st);
+                        if ($obj && !($obj->path =~ m/^spotify:/ || $obj->path =~ m/^deezer:/ || $obj->path =~ m/^qobuz:/ || $obj->path =~ m/^wimp:/)) {
+                            push @staticCompSeeds, $obj;
+                        }
+                    }
+                }
+                my $eifSeedTracks = _getMixableProperties($client, NUM_FOREST_SEED_TRACKS, 0);
+                if ($eifSeedTracks && ref $eifSeedTracks) {
+                    foreach my $st (@$eifSeedTracks) {
+                        my ($obj) = Slim::Schema->find('Track', $st);
+                        if ($obj && !($obj->path =~ m/^spotify:/ || $obj->path =~ m/^deezer:/ || $obj->path =~ m/^qobuz:/ || $obj->path =~ m/^wimp:/)) {
+                            push @eifCompSeeds, $obj;
+                        }
+                    }
+                }
+            }
+
+            my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $requestCount, $shuffle, $filterGenres, $noRepArtOverride, $noRepAlbOverride);
             my $port = $mixerPort || 12000;
             my $url = "http://localhost:$port/api/mix";
             main::DEBUGLOG && $log->debug("URL: ${url}");
             Slim::Networking::SimpleAsyncHTTP->new(
                 sub {
                     my $response = shift;
-                    main::DEBUGLOG && $log->debug("Received API response");
+                    main::DEBUGLOG && $log->debug("Received API response: " . ($response->headers->header('X-Bliss-Debug') || $response->content));
+
+                    # Analyse and log adaptive weights debug info if returned by bliss-mixer
+                    if (main::DEBUGLOG) {
+                        my $debugHeader = $response->headers->header('X-Bliss-Debug');
+                        if ($debugHeader) {
+                            eval {
+                                my $dbg = from_json($debugHeader);
+                                if ($dbg->{weights} && ref($dbg->{weights}) eq 'ARRAY') {
+                                    my %w = map { $_->{feature} => $_->{weight} } @{$dbg->{weights}};
+
+                                    # Sum per-feature weights within each metric group
+                                    my $tempo_sum  = $w{Tempo} // 0;
+                                    my $timbre_sum = 0;
+                                    $timbre_sum += ($w{$_} // 0) for qw(Zcr MeanSpectralCentroid StdDeviationSpectralCentroid MeanSpectralRolloff StdDeviationSpectralRolloff MeanSpectralFlatness StdDeviationSpectralFlatness);
+                                    my $loudness_sum = ($w{MeanLoudness} // 0) + ($w{StdDeviationLoudness} // 0);
+                                    my $chroma_sum = 0;
+                                    $chroma_sum += ($w{"Chroma$_"} // 0) for 1..13;
+
+                                    # Compute equivalent static slider values.
+                                    # Static pipeline: slider s -> per-feature w = (s/total*100)/ref -> effective weight w²
+                                    # Adaptive pipeline: per-feature weight W_i -> effective weight W_i
+                                    # Equivalent: w² = avg(W_i for group) -> w = √avg -> s = w * ref
+                                    # Then normalize so sliders sum to 100.
+                                    my $eq_tempo    = sqrt($tempo_sum / 1)  * 4;    # 1 feature,  ref=4
+                                    my $eq_timbre   = sqrt($timbre_sum / 7) * 30;   # 7 features, ref=30
+                                    my $eq_loudness = sqrt($loudness_sum / 2) * 9;  # 2 features, ref=9
+                                    my $eq_chroma   = sqrt($chroma_sum / 13) * 57;  # 13 features, ref=57
+                                    my $eq_total = $eq_tempo + $eq_timbre + $eq_loudness + $eq_chroma;
+                                    if ($eq_total > 0) {
+                                        # Scale to sum=96, then +1 each → sum=100, all values in 1..97
+                                        my $eq_scale = 96.0 / $eq_total;
+                                        $eq_tempo    = 1 + $eq_tempo    * $eq_scale;
+                                        $eq_timbre   = 1 + $eq_timbre   * $eq_scale;
+                                        $eq_loudness = 1 + $eq_loudness * $eq_scale;
+                                        $eq_chroma   = 1 + $eq_chroma   * $eq_scale;
+                                        $log->debug(sprintf("Equivalent static sliders: Tempo=%.0f  Timbre=%.0f  Loudness=%.0f  Chroma=%.0f  (configured: %d/%d/%d/%d)",
+                                            $eq_tempo, $eq_timbre, $eq_loudness, $eq_chroma,
+                                            int($prefs->get('weight_tempo') || 4), int($prefs->get('weight_timbre') || 30),
+                                            int($prefs->get('weight_loudness') || 9), int($prefs->get('weight_chroma') || 57)));
+                                    }
+
+                                    # Sort features by weight to find strongest/weakest seed similarities
+                                    my @sorted = sort { $b->{weight} <=> $a->{weight} } @{$dbg->{weights}};
+                                    my @top3    = @sorted[0..2];
+                                    my @bottom3 = @sorted[-3..-1];
+
+                                    $log->debug("Strongest seed similarities (highest weight): "
+                                        . join(", ", map { sprintf("%s=%.2f", $_->{feature}, $_->{weight}) } @top3));
+                                    $log->debug("Weakest seed similarities (lowest weight): "
+                                        . join(", ", map { sprintf("%s=%.2f", $_->{feature}, $_->{weight}) } @bottom3));
+                                }
+
+                                if ($dbg->{stats}) {
+                                    my $s = $dbg->{stats};
+                                    $log->debug(sprintf("Stats: %d tracks in DB, %d scored, %d usable (discarded: dur=%d bpm=%d genre=%d xmas=%d album=%d; filtered: artist=%d album=%d title=%d)",
+                                        $s->{db_total}, $s->{scored}, $s->{usable},
+                                        $s->{discarded_duration}, $s->{discarded_bpm}, $s->{discarded_genre}, $s->{discarded_xmas}, $s->{discarded_album},
+                                        $s->{filtered_artist}, $s->{filtered_album}, $s->{filtered_title}));
+                                }
+
+                                if ($dbg->{timing_ms}) {
+                                    my $t = $dbg->{timing_ms};
+                                    $log->debug(sprintf("Timing: %dms total (db=%dms calc=%dms sort=%dms filter=%dms)",
+                                        $t->{total}, $t->{db_load}, $t->{distance_calc}, $t->{sort}, $t->{filter}));
+                                }
+                            };
+                            if ($@) {
+                                $log->debug("Failed to parse debug header: $@");
+                            }
+                        }
+                    }
 
                     my @songs = split(/\n/, $response->content);
                     my $count = scalar @songs;
                     my $tracks = ();
+                    my @trackObjs = ();
                     my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
 
                     for (my $j = 0; $j < $count; $j++) {
                         my $trackObj = _pathToTrack($mediaDirs, $songs[$j]);
                         if (blessed $trackObj) {
                             push @$tracks, $trackObj->url;
+                            push @trackObjs, $trackObj;
+                            main::DEBUGLOG && $log->debug("  " . $trackObj->path);
                         } else {
                             $log->error('API attempted to mix in a song at ' . $songs[$j] . ' that can\'t be found at that location');
                         }
@@ -1054,11 +1209,36 @@ sub _dstmMix {
                         _mixFailed($client, $cb, $numSpot);
                     } else {
                         main::DEBUGLOG && $log->debug("Num tracks to use:" . scalar(@$tracks));
-                        foreach my $track (@$tracks) {
-                            main::DEBUGLOG && $log->debug("..." . $track);
-                        }
                         if (scalar @$tracks > 0) {
-                            $cb->($client, $tracks);
+                            if ($lastfmWeighting) {
+                                _selectViaLastFm(\@seedsToUse, \@trackObjs, $dstm_tracks, sub {
+                                    my $weightedUrls = shift;
+                                    $cb->($client, $weightedUrls);
+                                });
+                            } else {
+                                $cb->($client, $tracks);
+                            }
+
+                            # Fire "what-if" comparison requests (debug only, adaptive weights only)
+                            # Queued and fired sequentially to avoid overwhelming bliss-mixer
+                            if (main::DEBUGLOG && $useAdaptiveWeights) {
+                                my $prevRef = $previousTracks ? \@$previousTracks : undef;
+                                my @compQueue = ();
+                                if (scalar @staticCompSeeds > 0) {
+                                    my $staticJson = _buildComparisonJson(\@staticCompSeeds, $prevRef, $dstm_tracks, $filterGenres, 0, 0);
+                                    my $staticDesc = sprintf("static weights (Tempo=%d/Timbre=%d/Loudness=%d/Chroma=%d)",
+                                        int($prefs->get('weight_tempo') || 4), int($prefs->get('weight_timbre') || 30),
+                                        int($prefs->get('weight_loudness') || 9), int($prefs->get('weight_chroma') || 57));
+                                    push @compQueue, [$url, $staticDesc, $staticJson];
+                                }
+                                if (scalar @eifCompSeeds >= 4) {
+                                    my $eifJson = _buildComparisonJson(\@eifCompSeeds, $prevRef, $dstm_tracks, $filterGenres, 1, 0);
+                                    push @compQueue, [$url, "extended isolation forest", $eifJson];
+                                } else {
+                                    $log->debug('Comparison for "extended isolation forest" skipped (needs >= 4 seeds, have ' . scalar(@eifCompSeeds) . ')');
+                                }
+                                _fireComparisonQueue(\@compQueue) if @compQueue;
+                            }
                         } else {
                             _mixFailed($client, $cb, $numSpot);
                         }
@@ -1075,6 +1255,173 @@ sub _dstmMix {
             _mixFailed($client, $cb, $numSpot);
         }
     }
+}
+
+sub _selectViaLastFm {
+    my ($seeds, $trackObjs, $finalCount, $cb) = @_;
+
+    my @seedInfo;
+    my %lastfmArtists;
+    my %seenArtists;
+    my $targetPercent = int($prefs->get('lastfm_weighting_weight') || 25);
+    $targetPercent = 1 if $targetPercent < 1;
+    $targetPercent = 100 if $targetPercent > 100;
+
+    $log->debug("Last.fm weighted selection: " . scalar(@$seeds) . " seeds, " . scalar(@$trackObjs) . " bliss candidates, target=$targetPercent%, selecting $finalCount");
+
+    foreach my $seed (@$seeds) {
+        my $key = _lastfmNormalizeArtist($seed->artistName);
+        $lastfmArtists{$key} = 1;
+        unless ($seenArtists{$key}++) {
+            push @seedInfo, {
+                artist      => $seed->artistName,
+                artist_mbid => ($seed->artist ? $seed->artist->musicbrainz_id : undef),
+            };
+        }
+    }
+
+    _fetchSimilarArtistsForSeeds([@seedInfo], \%lastfmArtists, sub {
+        my ($hadError, $stats) = @_;
+        $stats ||= {};
+
+        if ($hadError) {
+            my $poolSize = scalar @$trackObjs;
+            my $end = ($finalCount - 1 < $#{$trackObjs}) ? $finalCount - 1 : $#{$trackObjs};
+            if (main::INFOLOG) {
+                $log->info("Last.fm API error: falling back to pure bliss top-$finalCount tracks");
+                $log->info(sprintf("Last.fm artist selection: 0 last.fm-endorsed, %d bliss-only in pool of %d (target=%d%%) -> selected %d",
+                    $poolSize, $poolSize, $targetPercent, $end + 1));
+                for my $i (0 .. $end) {
+                    $log->info("  [bliss-only, similarity-rank " . ($i + 1) . "/$poolSize] "
+                        . $trackObjs->[$i]->artistName . " - " . $trackObjs->[$i]->title);
+                }
+            }
+            my $urls = [ map { $_->url } @{$trackObjs}[0..$end] ];
+            $cb->($urls);
+            return;
+        }
+
+        if (main::INFOLOG && ($stats->{failed} || 0) > 0) {
+            my $ok = $stats->{succeeded} || 0;
+            my $failed = $stats->{failed} || 0;
+            $log->info("Last.fm partial result: $ok seed lookups succeeded, $failed failed; using collected endorsements");
+        }
+
+        main::INFOLOG && $log->info("Last.fm: " . scalar(keys %lastfmArtists) . " endorsed artists (incl. seed artists)");
+
+        my @weighted;
+        my ($endorsed_count, $rest_count) = (0, 0);
+        my $poolSize = scalar @$trackObjs;
+        for my $i (0 .. $#$trackObjs) {
+            my $trackObj = $trackObjs->[$i];
+            my $artistKey = _lastfmNormalizeArtist($trackObj->artistName);
+            my $endorsed = exists $lastfmArtists{$artistKey};
+            if ($endorsed) { $endorsed_count++ } else { $rest_count++ }
+            push @weighted, { track => $trackObj, endorsed => $endorsed, rank => $i + 1 };
+        }
+
+        my $endorsedWeight = _lastfmEndorsedWeightForPercent($targetPercent, $endorsed_count, $rest_count);
+        for my $entry (@weighted) {
+            my $w = $entry->{endorsed} ? $endorsedWeight : 1;
+            my $key = rand() ** (1.0 / $w);
+            $entry->{key} = $key;
+        }
+
+        @weighted = sort { $b->{key} <=> $a->{key} } @weighted;
+        splice(@weighted, $finalCount) if $poolSize > $finalCount;
+
+        main::INFOLOG && $log->info(sprintf(
+            "Last.fm artist selection: %d last.fm-endorsed, %d bliss-only in pool of %d (target=%d%%, computed weight=%.3f) -> selected %d",
+            $endorsed_count, $rest_count, scalar @$trackObjs, $targetPercent, $endorsedWeight, scalar @weighted));
+
+        if (main::INFOLOG) {
+            my $rankWidth = length("$poolSize");
+            my $maxTierLen = 0;
+            for my $entry (@weighted) {
+                my $len = $entry->{endorsed} ? length('last.fm-endorsed') : length('bliss-only');
+                $maxTierLen = $len if $len > $maxTierLen;
+            }
+            my $tierWidth = $maxTierLen + 2;  # +2 for one space padding each side
+            foreach my $entry (@weighted) {
+                my $tier = $entry->{endorsed} ? 'last.fm-endorsed' : 'bliss-only';
+                my $pad  = $tierWidth - length($tier);
+                my $lpad = ' ' x int($pad / 2);
+                my $rpad = ' ' x ($pad - int($pad / 2));
+                $log->info(sprintf("  [%s%s%s| similarity-rank %*d/%d ] %s - %s",
+                    $lpad, $tier, $rpad, $rankWidth, $entry->{rank}, $poolSize,
+                    $entry->{track}->artistName, $entry->{track}->title));
+            }
+        }
+
+        my $urls = [ map { $_->{track}->url } @weighted ];
+        $cb->($urls);
+    });
+}
+
+sub _lastfmEndorsedWeightForPercent {
+    my ($targetPercent, $endorsedCount, $restCount) = @_;
+
+    return 1 if $endorsedCount <= 0 || $restCount <= 0;
+    return 1000000 if $targetPercent >= 100;
+
+    my $target = $targetPercent / 100.0;
+    my $weight = ($target * $restCount) / ((1.0 - $target) * $endorsedCount);
+    return $weight > 0 ? $weight : 0.000001;
+}
+
+sub _fetchSimilarArtistsForSeeds {
+    my ($seedInfo, $resultHash, $cb, $stats) = @_;
+    $stats ||= { succeeded => 0, failed => 0 };
+
+    if (!@$seedInfo) {
+        my $allFailed = $stats->{failed} > 0 && $stats->{succeeded} == 0;
+        $cb->($allFailed ? 1 : 0, $stats);
+        return;
+    }
+
+    my $seed = shift @$seedInfo;
+    main::DEBUGLOG && $log->debug("Last.fm: getSimilarArtists for \"" . ($seed->{artist} // '') . "\"");
+
+    Plugins::LastMix::LFM->getSimilarArtists(sub {
+        my $results = shift;
+        if ($results && ref $results && $results->{error}) {
+            my $msg = $results->{message} // "code " . $results->{error};
+            $log->warn("Last.fm error for \"" . ($seed->{artist} // '') . "\": $msg");
+            $stats->{failed}++;
+            _fetchSimilarArtistsForSeeds($seedInfo, $resultHash, $cb, $stats);
+            return;
+        } elsif ($results && ref $results && $results->{similarartists} && ref $results->{similarartists}) {
+            $stats->{succeeded}++;
+            my $artists = $results->{similarartists}->{artist};
+            if ($artists && ref $artists eq 'ARRAY') {
+                my $count = 0;
+                foreach my $a (@$artists) {
+                    next unless $a->{name};
+                    my $key = _lastfmNormalizeArtist($a->{name});
+                    $resultHash->{$key} = 1;
+                    $count++;
+                }
+                main::INFOLOG && $log->info("Last.fm: got $count similar artists for \"" . ($seed->{artist} // '') . "\"");
+                if (main::DEBUGLOG) {
+                    $log->debug("  Last.fm similar artist: " . $_->{name}) for grep { $_->{name} } @$artists;
+                }
+            }
+        } else {
+            $stats->{succeeded}++;
+            main::INFOLOG && $log->info("Last.fm: no similar artists returned for \"" . ($seed->{artist} // '') . "\"");
+        }
+        _fetchSimilarArtistsForSeeds($seedInfo, $resultHash, $cb, $stats);
+    }, {
+        artist => $seed->{artist},
+        mbid   => $seed->{artist_mbid},
+    });
+}
+
+sub _lastfmNormalizeArtist {
+    my $artist = shift;
+    my $a = lc($artist // '');
+    $a =~ s/^\s+|\s+$//g;
+    return $a;
 }
 
 sub prefName {
@@ -1133,6 +1480,8 @@ sub _getMixData {
     my $trackCount = shift;
     my $shuffle = shift;
     my $filterGenres = shift;
+    my $noRepArtOverride = shift;
+    my $noRepAlbOverride = shift;
     my @tracks = ref $seedTracks ? @$seedTracks : ($seedTracks);
     my @previous = ref $previousTracks ? @$previousTracks : ($previousTracks);
     my @mix = ();
@@ -1166,11 +1515,13 @@ sub _getMixData {
                         tracks      => [@track_paths],
                         previous    => [@previous_paths],
                         shuffle     => int($shuffle),
-                        norepart    => int($prefs->get('no_repeat_artist')),
-                        norepalb    => int($prefs->get('no_repeat_album')),
+                        norepart    => int($noRepArtOverride // $prefs->get('no_repeat_artist')),
+                        norepalb    => int($noRepAlbOverride // $prefs->get('no_repeat_album')),
                         forest      => int($prefs->get('use_forest') || 0),
+                        adaptiveweights => int($prefs->get('use_adaptive_weights') || 0),
                         genregroups => _genreGroups(),
-                        allgenres   => int($prefs->get('match_all_genres') || 0)
+                        allgenres   => int($prefs->get('match_all_genres') || 0),
+                        main::DEBUGLOG ? (debug => 1) : ()
                     });
     main::DEBUGLOG && $log->debug("Request $jsonData");
     return $jsonData;
@@ -1197,6 +1548,82 @@ sub _getListData {
 
     main::DEBUGLOG && $log->debug("Request $jsonData");
     return $jsonData;
+}
+
+# Build a comparison request JSON with explicit forest/adaptiveweights overrides
+# (used for "what-if" debug logging when adaptive weights is active)
+sub _buildComparisonJson {
+    my ($seedTracks, $previousTracks, $trackCount, $filterGenres, $forest, $adaptiveweights) = @_;
+    my @tracks = ref $seedTracks ? @$seedTracks : ($seedTracks);
+    my @track_paths = ();
+    my @previous_paths = ();
+    my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
+
+    foreach my $track (@tracks) {
+        push @track_paths, _trackToPath($mediaDirs, $track);
+    }
+
+    if ($previousTracks and ref $previousTracks eq 'ARRAY' and scalar @$previousTracks > 0) {
+        foreach my $track (@$previousTracks) {
+            push @previous_paths, _trackToPath($mediaDirs, $track);
+        }
+    }
+
+    my $filterXmas = 1;
+    my $filterXmpsPref = $prefs->get('filter_xmas');
+    if (defined $filterXmpsPref) {
+        $filterXmas = int($filterXmpsPref);
+    }
+
+    return to_json({
+                        count       => int($trackCount),
+                        filtergenre => int($filterGenres),
+                        filterxmas  => $filterXmas,
+                        min         => int($prefs->get('min_duration') || 0),
+                        max         => int($prefs->get('max_duration') || 0),
+                        maxbpmdiff  => int($prefs->get('max_bpm_diff') || 0),
+                        tracks      => [@track_paths],
+                        previous    => [@previous_paths],
+                        shuffle     => 1,
+                        norepart    => int($prefs->get('no_repeat_artist')),
+                        norepalb    => int($prefs->get('no_repeat_album')),
+                        forest      => int($forest),
+                        adaptiveweights => int($adaptiveweights),
+                        genregroups => _genreGroups(),
+                        allgenres   => int($prefs->get('match_all_genres') || 0),
+                    });
+}
+
+# Fire comparison requests sequentially (each waits for the previous to finish)
+sub _fireComparisonQueue {
+    my $queue = shift;
+    return unless @$queue;
+
+    my $entry = shift @$queue;
+    my ($url, $strategyName, $jsonData) = @$entry;
+
+    Slim::Networking::SimpleAsyncHTTP->new(
+        sub {
+            my $response = shift;
+            my @songs = split(/\n/, $response->content);
+            $log->debug("Mixing strategy \"${strategyName}\" would have chosen:");
+            my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
+            foreach my $song (@songs) {
+                my $trackObj = _pathToTrack($mediaDirs, $song);
+                if (blessed $trackObj) {
+                    $log->debug("  " . $trackObj->path);
+                }
+            }
+            # Fire next comparison in queue
+            _fireComparisonQueue($queue);
+        },
+        sub {
+            my $response = shift;
+            $log->debug("Comparison request for \"${strategyName}\" failed: " . $response->error);
+            # Continue with next even on failure
+            _fireComparisonQueue($queue);
+        }
+    )->post($url, 'Content-Type' => 'application/json;charset=utf-8', $jsonData);
 }
 
 my $genreGroups = [];

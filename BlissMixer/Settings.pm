@@ -37,7 +37,7 @@ sub prefs {
                     'no_repeat_artist', 'no_repeat_album', 'no_repeat_track', 'dstm_tracks', 'genre_groups',
                     'weight_tempo', 'weight_timbre', 'weight_loudness', 'weight_chroma', 'max_bpm_diff',
                     'use_track_genre', 'run_analyser_after_scan', 'analysis_read_tags', 'analysis_write_tags',
-                    'use_forest', 'analyser_ignore_dirs', 'analyser_max_files', 'analyser_max_threads',
+                    'use_forest', 'use_adaptive_weights', 'num_seed_tracks', 'seed_strict_order', 'use_lastfm_weighting', 'lastfm_weighting_weight', 'analyser_ignore_dirs', 'analyser_max_files', 'analyser_max_threads',
                     'analyser_ignore_txt', 'match_all_genres');
 }
 
@@ -59,6 +59,7 @@ sub beforeRender {
     $paramRef->{'clear_failures_text'} = string('BLISSMIXER_ANALYSE_CLEAR_FAILURES_BUTTON');
     my $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
     $paramRef->{'no_analyser_binary'} = !$analyserBinary;
+    $paramRef->{'lastmix_available'} = Slim::Utils::PluginManager->isEnabled('Plugins::LastMix::Plugin') ? 1 : 0;
 }
 
 sub handler {
