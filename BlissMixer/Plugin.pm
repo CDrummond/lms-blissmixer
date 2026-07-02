@@ -674,8 +674,7 @@ sub _pathToTrack {
             $absPath = Win32::GetANSIPathName($absPath);
         }
 
-        $absPath = Slim::Utils::Unicode::utf8encode_locale($absPath);
-        if (-e $absPath) {
+        if (-e $absPath || -e Slim::Utils::Unicode::utf8encode_locale($absPath)) {
             my $url = Slim::Utils::Misc::fileURLFromPath($absPath);
 
             if ($cueTrackNum>0) {

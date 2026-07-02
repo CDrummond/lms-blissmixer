@@ -5,6 +5,7 @@
 2. Fix detecting of radio station as last item in queue.
 3. Use min/max duration to filter seed tracks.
 4. Fix showing of 'ignored' count in settings.
+5. Fix unicode path errors under Windows.
 
 0.9.0
 -----
