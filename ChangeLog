@@ -1,7 +1,7 @@
 0.10.0
 ------
 1. Add adaptive weighting strategy with optional Last.fm artist context. Thanks
-   to chrober for impementing.
+   to chrober for implementing.
 2. Fix detecting of radio station as last item in queue.
 3. Use min/max duration to filter seed tracks.
 4. Fix showing of 'ignored' count in settings.
