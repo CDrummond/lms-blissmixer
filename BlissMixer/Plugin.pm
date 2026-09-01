@@ -179,6 +179,21 @@ sub postinitPlugin {
         #    _dstmMix($client, $cb, 0, 0);
         #});
     }
+    if ( Slim::Utils::PluginManager->isEnabled('Plugins::SlimPing::Plugin') ) {
+        require Plugins::SlimPing::Core::SonicRegistry;
+        Plugins::SlimPing::Core::SonicRegistry->registerProvider->({
+            id            => 'BLISSMIXER_DSTM',
+            name          => 'BLISSMIXER_DSTM',
+            similarTracks => sub {
+                my ($track, $count, $ctx, $cb) = @_;
+                _similarTracks($track, $count, $ctx, $cb);
+            },
+            findPath => sub {
+                my ($start, $end, $count, $ctx, $cb) = @_;
+                $cb->([]); # TODO!!!
+            },
+        });
+    }
 }
 
 sub _initBinaries {
@@ -467,7 +482,7 @@ sub _cliCommand {
             if ($count>0 && $count<$numTracks) {
                 $numTracks = $count;
             }
-            my $jsonData = _getMixData(\@seedsToUse, undef, $numTracks, 1, $prefs->get('filter_genres') || 0);
+            my $jsonData = _getMixData(\@seedsToUse, undef, $numTracks, 1, $prefs->get('filter_genres') || 0, 0);
 
             Slim::Player::Playlist::fischer_yates_shuffle(\@seedsToUse);
             if (0==_callApi($request, $jsonData, $numTracks, @seedsToUse[0], "mix", 0)) {
@@ -1054,10 +1069,9 @@ sub _dstmMix {
                 $log->debug("Mixing strategy: $strategy");
             }
 
-            my $dstm_tracks = $prefs->get('dstm_tracks') || DEF_NUM_DSTM_TRACKS;
-            my $lastfmWeighting = $useAdaptiveWeights && $prefs->get('use_lastfm_weighting')
-                && exists $INC{'Plugins/LastMix/LFM.pm'};
-            my $requestCount = $lastfmWeighting ? $dstm_tracks * 10 : $dstm_tracks;
+            my $numDstmTracks = $prefs->get('dstm_tracks') || DEF_NUM_DSTM_TRACKS;
+            my $lastfmWeighting = $useAdaptiveWeights && $prefs->get('use_lastfm_weighting') && exists $INC{'Plugins/LastMix/LFM.pm'};
+            my $requestCount = $lastfmWeighting ? $numDstmTracks * 10 : $numDstmTracks;
             my $shuffle = $lastfmWeighting ? 0 : 1;
             # Inflate norepart/norepalb to cover the full pool so the sliding window
             # in bliss-mixer never scrolls past a recently-played artist/album as the
@@ -1107,7 +1121,7 @@ sub _dstmMix {
                 }
             }
 
-            my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $requestCount, $shuffle, $filterGenres, $noRepArtOverride, $noRepAlbOverride);
+            my $jsonData = _getMixData(\@seedsToUse, $previousTracks ? \@$previousTracks : undef, $requestCount, $shuffle, $filterGenres, 0, $noRepArtOverride, $noRepAlbOverride);
             my $port = $mixerPort || 12000;
             my $url = "http://localhost:$port/api/mix";
             main::DEBUGLOG && $log->debug("URL: ${url}");
@@ -1210,7 +1224,7 @@ sub _dstmMix {
                         main::DEBUGLOG && $log->debug("Num tracks to use:" . scalar(@$tracks));
                         if (scalar @$tracks > 0) {
                             if ($lastfmWeighting) {
-                                _selectViaLastFm(\@seedsToUse, \@trackObjs, $dstm_tracks, sub {
+                                _selectViaLastFm(\@seedsToUse, \@trackObjs, $numDstmTracks, sub {
                                     my $weightedUrls = shift;
                                     $cb->($client, $weightedUrls);
                                 });
@@ -1224,14 +1238,14 @@ sub _dstmMix {
                                 my $prevRef = $previousTracks ? \@$previousTracks : undef;
                                 my @compQueue = ();
                                 if (scalar @staticCompSeeds > 0) {
-                                    my $staticJson = _buildComparisonJson(\@staticCompSeeds, $prevRef, $dstm_tracks, $filterGenres, 0, 0);
+                                    my $staticJson = _buildComparisonJson(\@staticCompSeeds, $prevRef, $numDstmTracks, $filterGenres, 0, 0);
                                     my $staticDesc = sprintf("static weights (Tempo=%d/Timbre=%d/Loudness=%d/Chroma=%d)",
                                         int($prefs->get('weight_tempo') || 4), int($prefs->get('weight_timbre') || 30),
                                         int($prefs->get('weight_loudness') || 9), int($prefs->get('weight_chroma') || 57));
                                     push @compQueue, [$url, $staticDesc, $staticJson];
                                 }
                                 if (scalar @eifCompSeeds >= 4) {
-                                    my $eifJson = _buildComparisonJson(\@eifCompSeeds, $prevRef, $dstm_tracks, $filterGenres, 1, 0);
+                                    my $eifJson = _buildComparisonJson(\@eifCompSeeds, $prevRef, $numDstmTracks, $filterGenres, 1, 0);
                                     push @compQueue, [$url, "extended isolation forest", $eifJson];
                                 } else {
                                     $log->debug('Comparison for "extended isolation forest" skipped (needs >= 4 seeds, have ' . scalar(@eifCompSeeds) . ')');
@@ -1253,6 +1267,76 @@ sub _dstmMix {
         } else {
             _mixFailed($client, $cb, $numSpot);
         }
+    }
+}
+
+sub _similarTracks {
+    my ($track, $count, $ctx, $cb) = @_;
+
+    my @seeds = ();
+
+    if ($ctx) {
+        @seeds = $ctx->{seed_tracks};
+    } else {
+        push @seeds, $track;
+    }
+
+    if (scalar @seeds > 0) {
+        #my $lastfmWeighting = $useAdaptiveWeights && $prefs->get('use_lastfm_weighting') && exists $INC{'Plugins/LastMix/LFM.pm'};
+        #my $requestCount = $lastfmWeighting ? $dstm_tracks * 10 : $dstm_tracks;
+        #my ($noRepArtOverride, $noRepAlbOverride);
+        #if ($lastfmWeighting) {
+        #    my $noRepArt = int($prefs->get('no_repeat_artist') || 0);
+        #    my $noRepAlb = int($prefs->get('no_repeat_album') || 0);
+        #    $noRepArtOverride = $noRepArt > 0 ? $noRepArt + $count - 1 : undef;
+        #    $noRepAlbOverride = $noRepAlb > 0 ? $noRepAlb + $count - 1 : undef;
+        #}
+
+        my $jsonData = _getMixData(\@seeds, undef, $count, 0, $prefs->get('filter_genres') || 0, 1); # , $noRepArtOverride, $noRepAlbOverride);
+        my $port = $mixerPort || 12000;
+        my $url = "http://localhost:$port/api/mix";
+        main::DEBUGLOG && $log->debug("URL: ${url}");
+        Slim::Networking::SimpleAsyncHTTP->new(
+            sub {
+                my $response = shift;
+                main::DEBUGLOG && $log->debug("Received API response: " . $response->content);
+                my $songs = eval { decode_json( $response->content ) };
+                my @resp = [];
+                my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
+
+                for my $song (@{$songs}) {
+                    my $trackObj = _pathToTrack($mediaDirs, $song->{'file'});
+                    if (blessed $trackObj) {
+                        push @resp, {track => $trackObj, similarity => $song->{'sim'} };
+                        main::DEBUGLOG && $log->debug("  " . $trackObj->path);
+                    } else {
+                        $log->error('API attempted to mix in a song at ' . $song->{'file'} . ' that can\'t be found at that location');
+                    }
+                }
+
+                main::DEBUGLOG && $log->debug("Num tracks to use:" . scalar(@resp));
+                if (scalar(@resp)<1) {
+                    $cb->([]);
+                } else {
+                    #if ($lastfmWeighting) {
+                    #    _selectViaLastFm(\@seedsToUse, \@trackObjs, $dstm_tracks, sub {
+                    #        my $weightedUrls = shift;
+                    #        $cb->($client, $weightedUrls);
+                    #    });
+                    #} else {
+                        $cb->(\@resp);
+                    #}
+                }
+            },
+            sub {
+                my $response = shift;
+                my $error  = $response->error;
+                main::DEBUGLOG && $log->debug("Failed to fetch URL: $error");
+                $cb->([]);
+            }
+        )->post($url, 'Content-Type' => 'application/json;charset=utf-8', $jsonData);
+    } else {
+        $cb->([]);
     }
 }
 
@@ -1479,6 +1563,7 @@ sub _getMixData {
     my $trackCount = shift;
     my $shuffle = shift;
     my $filterGenres = shift;
+    my $returnJson = shift;
     my $noRepArtOverride = shift;
     my $noRepAlbOverride = shift;
     my @tracks = ref $seedTracks ? @$seedTracks : ($seedTracks);
@@ -1520,6 +1605,7 @@ sub _getMixData {
                         adaptiveweights => int($prefs->get('use_adaptive_weights') || 0),
                         genregroups => _genreGroups(),
                         allgenres   => int($prefs->get('match_all_genres') || 0),
+                        json        => int($returnJson),
                         main::DEBUGLOG ? (debug => 1) : ()
                     });
     main::DEBUGLOG && $log->debug("Request $jsonData");
@@ -1531,6 +1617,7 @@ sub _getListData {
     my $trackCount = shift;
     my $filterGenres = shift;
     my $byArtist = shift;
+    my $returnJson = shift;
 
     my $mediaDirs = Slim::Utils::Misc::getMediaDirs('audio');
     my $jsonData = to_json({
@@ -1542,7 +1629,8 @@ sub _getListData {
                         track       => _trackToPath($mediaDirs, $seedTrack),
                         genregroups => _genreGroups(),
                         allgenres   => int($prefs->get('match_all_genres') || 0),
-                        byartist    => int($byArtist)
+                        byartist    => int($byArtist),
+                        json        => int($returnJson)
                     });
 
     main::DEBUGLOG && $log->debug("Request $jsonData");
