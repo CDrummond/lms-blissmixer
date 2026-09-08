@@ -192,20 +192,37 @@ BLISSMIXER_SEED_STRICT_ORDER
 BLISSMIXER_SEED_STRICT_ORDER_DESC
 	EN	When enabled, always use the last N tracks from the play queue as seeds, preserving their order. When disabled, seeds are randomly sampled from a larger pool of recent tracks.
 
-BLISSMIXER_LASTFM_WEIGHTING
-	EN	Last.fm artist weighting
+BLISSMIXER_CANDIDATE_SELECTION_SECTION
+	EN	Candidate selection
+	DE	Kandidatenauswahl
 
-BLISSMIXER_LASTFM_WEIGHTING_DESC
-	EN	Helps reduce genre drift in heterogeneous libraries while still allowing acoustically similar tracks from unknown artists to be selected. When enabled, a larger pool of bliss candidates is fetched and tracks from Last.fm-endorsed artists are given a higher selection probability (weighted random sampling). Requires the LastMix plugin to be installed and enabled.
+BLISSMIXER_CANDIDATE_SELECTION_SECTION_NOTE
+	EN	These optional refinements are applied after the selected mixing strategy has found acoustically similar candidates.
+	DE	Diese optionalen Verfeinerungen werden angewendet, nachdem die ausgewählte Mix-Strategie akustisch ähnliche Kandidaten gefunden hat.
 
 BLISSMIXER_LASTFM_WEIGHTING_UNAVAILABLE
 	EN	Requires the LastMix plugin to be installed and enabled.
+	DE	Das LastMix-Plugin muss installiert und aktiviert sein.
 
 BLISSMIXER_LASTFM_WEIGHTING_WEIGHT
 	EN	Last.fm artist probability
+	DE	Last.fm-Interpreten-Wahrscheinlichkeit
 
 BLISSMIXER_LASTFM_WEIGHTING_WEIGHT_DESC
-	EN	Target percentage of chosen tracks that should come from Last.fm-endorsed artists. For example, 25 means roughly one endorsed artist in every four selected tracks, when enough endorsed and non-endorsed candidates are available. Default: 25.
+	EN	Target percentage of chosen tracks that should come from Last.fm-endorsed artists. For example, 25 means roughly one endorsed artist in every four selected tracks, when enough endorsed and non-endorsed candidates are available. Set to 0 to disable Last.fm artist selection. Default: 0.
+	DE	Zielanteil der ausgewählten Tracks, deren Interpreten von Last.fm empfohlen werden. Beispielsweise bedeutet 25 ungefähr einen empfohlenen Interpreten unter vier ausgewählten Tracks, sofern genügend empfohlene und nicht empfohlene Kandidaten verfügbar sind. Mit 0 wird die Last.fm-Interpretenauswahl deaktiviert. Standard: 0.
+
+BLISSMIXER_PLAYCOUNT_INFLUENCE
+	EN	Play-count influence
+	DE	Einfluss der Wiedergabehäufigkeit
+
+BLISSMIXER_PLAYCOUNT_INFLUENCE_DESC
+	EN	Negative values prefer tracks played less frequently, while positive values prefer tracks played more frequently. Set to 0 to disable play-count selection. Default: 0.
+	DE	Negative Werte bevorzugen seltener wiedergegebene Tracks, positive Werte häufiger wiedergegebene Tracks. Mit 0 wird die Wiedergabehäufigkeit nicht berücksichtigt. Standard: 0.
+
+BLISSMIXER_PLAYCOUNT_INFLUENCE_UNAVAILABLE
+	EN	Requires server statistics to be enabled under Settings / Advanced / Performance.
+	DE	Serverstatistiken müssen unter Einstellungen / Erweitert / Leistung aktiviert sein.
 
 BLISSMIXER_USE_TRACK_GENRE
 	EN	Use track genre
