@@ -137,9 +137,11 @@ BLISSMIXER_PORT_NOTE
 
 BLISSMIXER_METRICS
 	EN	Metric weightings
+	DE	Metrik-Gewichtung
 
 BLISSMIXER_METRICS_NOTE
 	EN	Tracks are located based upon how close their metrics are to seed tracks. Bliss creates 23 such metrics per track; 'Tempo' has a single metric, 'Timbre' has 7 metrics, 'Loudness' has 2 metrics, and 'Chroma' has 13. By default each individual metric has the same 'weight', therefore 'Tempo' makes up 4% of a similarity score, 'Timbre' 30%, 'Loudness' 9%, and 'Chroma' 57%. You may use the settings below to alter this weighting per metric type. For more information, please refer to <a href="https://lelele.io/bliss.html">https://lelele.io/bliss.html</a>
+	DE	Tracks werden danach ausgewählt, wie ähnlich ihre Metriken den Seed-Tracks sind. Bliss erstellt 23 solcher Metriken pro Track: 'Tempo' hat eine Metrik, 'Timbre' hat 7 Metriken, 'Loudness' hat 2 Metriken und 'Chroma' hat 13 Metriken. Standardmäßig hat jede einzelne Metrik die gleiche Gewichtung, daher macht 'Tempo' 4% eines Ähnlichkeitswerts aus, 'Timbre' 30%, 'Loudness' 9% und 'Chroma' 57%. Mit den folgenden Einstellungen kann diese Gewichtung pro Metriktyp geändert werden. Weitere Informationen: <a href="https://lelele.io/bliss.html">https://lelele.io/bliss.html</a>
 
 BLISSMIXER_METRIC_TEMPO
 	EN	Tempo
@@ -155,42 +157,54 @@ BLISSMIXER_METRIC_CHROMA
 
 BLISSMIXER_MAX_BPM_DIFF
 	EN	Maximum BPM difference
+	DE	Maximale BPM-Abweichung
 
 BLISSMIXER_MAX_BPM_DIFF_DESC
 	EN	Maximum difference between BPM of seed track and candidate tracks. Set to 0 for no maximum.
 
 BLISSMIXER_MIX_ALGORITHM
 	EN	Mixing strategy
+	DE	Mix-Strategie
 
 BLISSMIXER_MIX_ALGORITHM_DESC
-	EN	<b>Metric weightings:</b> Finds similar tracks based on the four metric weight sliders (Tempo, Timbre, Loudness, Chroma). Best when you know which audio characteristics matter most.<br/><br/><b>Extended isolation forest:</b> Trains a statistical model on the seed tracks and scores candidates by how well they fit the pattern. No manual tuning needed; requires at least 4 seeds.<br/><br/><b>Adaptive weightings:</b> Automatically discovers which characteristics the seed tracks have in common and emphasises those when searching.
+	EN	<b>Metric weightings:</b> Finds similar tracks based on the four metric weight sliders (Tempo, Timbre, Loudness, Chroma). Best when you know which audio characteristics matter most.<br/><br/><b>Extended isolation forest:</b> Trains a statistical model on the seed tracks and scores candidates by how well they fit the pattern. No manual tuning needed; requires at least 4 seeds.<br/><br/><b>Adaptive weightings:</b> Automatically discovers which characteristics the seed tracks have in common and emphasises those when searching; requires at least 2 seeds.
+	DE	<b>Metrik-Gewichtung:</b> Findet ähnliche Tracks anhand der vier Gewichtungsregler (Tempo, Timbre, Loudness, Chroma). Am besten geeignet, wenn bekannt ist, welche Audioeigenschaften besonders wichtig sind.<br/><br/><b>Extended isolation forest:</b> Trainiert ein statistisches Modell auf den Seed-Tracks und bewertet Kandidaten danach, wie gut sie zu diesem Muster passen. Keine manuelle Abstimmung nötig; benötigt mindestens 4 Seeds.<br/><br/><b>Adaptive Gewichtung:</b> Ermittelt automatisch, welche Eigenschaften die Seed-Tracks gemeinsam haben, und gewichtet diese bei der Suche stärker; benötigt mindestens 2 Seeds.
 
 BLISSMIXER_ALG_STATIC
 	EN	Metric weightings
+	DE	Metrik-Gewichtung
 
 BLISSMIXER_ALG_FOREST
 	EN	Extended isolation forest
+	DE	Extended isolation forest
 
 BLISSMIXER_ALG_DYNAMIC
 	EN	Adaptive weightings
+	DE	Adaptive Gewichtung
 
 BLISSMIXER_DYNAMIC_SECTION
 	EN	Adaptive weightings
+	DE	Adaptive Gewichtung
 
 BLISSMIXER_DYNAMIC_SECTION_NOTE
 	EN	Discovers which audio characteristics the seed tracks have in common and automatically emphasises those when searching. Feature weights are derived from the variance across seed tracks — characteristics that are consistent across all seeds receive a higher weight.
+	DE	Ermittelt, welche Audioeigenschaften die Seed-Tracks gemeinsam haben, und gewichtet diese bei der Suche automatisch stärker. Die Feature-Gewichte werden aus der Varianz der Seed-Tracks abgeleitet - Eigenschaften, die über alle Seeds hinweg ähnlich sind, erhalten eine höhere Gewichtung.
 
 BLISSMIXER_NUM_SEED_TRACKS
 	EN	Number of seed tracks
+	DE	Anzahl der Seed-Tracks
 
 BLISSMIXER_NUM_SEED_TRACKS_DESC
 	EN	How many recent tracks to use as seeds for the adaptive weighting strategy. Fewer seeds give sharper, more focused weights. More seeds capture broader context but produce blurrier weights. Default: 3.
+	DE	Anzahl der kürzlich wiedergegebenen Tracks, die als Seeds für die adaptive Gewichtung verwendet werden. Weniger Seeds ergeben schärfere, stärker fokussierte Gewichtungen. Mehr Seeds erfassen einen breiteren Kontext, führen aber zu unschärferen Gewichtungen. Standard: 3.
 
 BLISSMIXER_SEED_STRICT_ORDER
 	EN	Use most recent tracks as seeds
+	DE	Neueste Tracks als Seeds verwenden
 
 BLISSMIXER_SEED_STRICT_ORDER_DESC
 	EN	When enabled, always use the last N tracks from the play queue as seeds, preserving their order. When disabled, seeds are randomly sampled from a larger pool of recent tracks.
+	DE	Wenn aktiviert, werden immer die letzten N Tracks aus der Wiedergabeliste als Seeds verwendet, wobei ihre Reihenfolge erhalten bleibt. Wenn deaktiviert, werden die Seeds zufällig aus einem größeren Pool kürzlich wiedergegebener Tracks ausgewählt.
 
 BLISSMIXER_CANDIDATE_SELECTION_SECTION
 	EN	Candidate selection
@@ -328,6 +342,7 @@ BLISSMIXER_MIX_SETTINGS
 
 BLISSMIXER_MIX_SETTINGS_NOTE
 	EN	The following settings control how tracks are selected for mixes.
+	DE	Die folgenden Einstellungen legen fest, wie Tracks für Mixe ausgewählt werden.
 
 BLISSMIXER_MATCH_ALL_GENRES
 	EN	Match all genres
