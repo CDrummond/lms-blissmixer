@@ -1,0 +1,21 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  perl-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Check candidate-selection syntax
+        run: perl -c BlissMixer/CandidateSelection.pm
+
+      - name: Run tests
+        run: prove --verbose t

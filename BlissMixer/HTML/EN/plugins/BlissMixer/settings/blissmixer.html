@@ -172,13 +172,24 @@
         <input type="checkbox" name="pref_seed_strict_order" id="seed_strict_order" [% IF prefs.seed_strict_order %] checked [% END %] value="1"/>
         [% END %]
 
-        [% WRAPPER settingGroup title="BLISSMIXER_LASTFM_WEIGHTING" desc="BLISSMIXER_LASTFM_WEIGHTING_DESC" %]
-        <input type="checkbox" name="pref_use_lastfm_weighting" id="use_lastfm_weighting" [% IF prefs.use_lastfm_weighting %] checked [% END %] value="1" [% UNLESS lastmix_available %] disabled [% END %] onchange="updateLastFmWeight()"/>
-        [% UNLESS lastmix_available %]<div style="opacity:0.6;margin-top:4px">[% "BLISSMIXER_LASTFM_WEIGHTING_UNAVAILABLE" | string %]</div>[% END %]
-        [% END %]
+        <br/><hr style="opacity:0.4" class="sub-sep"/><br/>
+        <b style="font-size:120%">[% "BLISSMIXER_CANDIDATE_SELECTION_SECTION" | string %]</b><br/><br/>
+        <div style="opacity:0.6">[% "BLISSMIXER_CANDIDATE_SELECTION_SECTION_NOTE" | string %]</div><br/>
 
         [% WRAPPER settingGroup title="BLISSMIXER_LASTFM_WEIGHTING_WEIGHT" desc="BLISSMIXER_LASTFM_WEIGHTING_WEIGHT_DESC" %]
-        <input type="number" min="1" max="100" class="stdedit sliderInput_1_100_1" name="pref_lastfm_weighting_weight" id="lastfm_weighting_weight" value="[% prefs.lastfm_weighting_weight %]" size="5" [% UNLESS lastmix_available %] disabled [% END %]>
+        <input type="number" min="0" max="100" step="1" class="stdedit sliderInput_0_100_1" name="pref_lastfm_weighting_weight" id="lastfm_weighting_weight" value="[% prefs.lastfm_weighting_weight %]" size="5" [% UNLESS lastmix_available %]disabled[% END %]>
+        [% UNLESS lastmix_available %]
+            <input type="hidden" name="pref_lastfm_weighting_weight" value="[% prefs.lastfm_weighting_weight %]">
+            <div style="opacity:0.6;margin-top:4px">[% "BLISSMIXER_LASTFM_WEIGHTING_UNAVAILABLE" | string %]</div>
+        [% END %]
+        [% END %]
+
+        [% WRAPPER settingGroup title="BLISSMIXER_PLAYCOUNT_INFLUENCE" desc="BLISSMIXER_PLAYCOUNT_INFLUENCE_DESC" %]
+        <input type="number" min="-100" max="100" step="1" class="stdedit sliderInput_-100_100_1" name="pref_playcount_influence" id="playcount_influence" value="[% prefs.playcount_influence %]" size="5" [% UNLESS statistics_enabled %]disabled[% END %]>
+        [% UNLESS statistics_enabled %]
+            <input type="hidden" name="pref_playcount_influence" value="[% prefs.playcount_influence %]">
+            <div style="opacity:0.6;margin-top:4px">[% "BLISSMIXER_PLAYCOUNT_INFLUENCE_UNAVAILABLE" | string %]</div>
+        [% END %]
         [% END %]
         </div>
 
@@ -362,19 +373,9 @@
         }
     }
 
-    function updateLastFmWeight() {
-        let cb = document.getElementById('use_lastfm_weighting');
-        let numInput = document.getElementById('lastfm_weighting_weight');
-        let rangeInput = document.getElementById('mskslider.lastfm_weighting_weight');
-        let enabled = cb && cb.checked && !cb.disabled;
-        if (numInput) numInput.disabled = !enabled;
-        if (rangeInput) rangeInput.disabled = !enabled;
-    }
-
     window.addEventListener("load",() => {
         statusInterval = setInterval(getAnalyserStatus, 1000);
         getAnalyserStatus();
-        updateLastFmWeight();
         try {
             if (undefined!=window.localStorage) {
                 ["mixer-section", "analyser-section"].forEach(sect => {

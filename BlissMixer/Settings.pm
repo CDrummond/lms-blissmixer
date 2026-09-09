@@ -37,7 +37,7 @@ sub prefs {
                     'no_repeat_artist', 'no_repeat_album', 'no_repeat_track', 'dstm_tracks', 'genre_groups',
                     'weight_tempo', 'weight_timbre', 'weight_loudness', 'weight_chroma', 'max_bpm_diff',
                     'use_track_genre', 'run_analyser_after_scan', 'analysis_read_tags', 'analysis_write_tags',
-                    'use_forest', 'use_adaptive_weights', 'num_seed_tracks', 'seed_strict_order', 'use_lastfm_weighting', 'lastfm_weighting_weight', 'analyser_ignore_dirs', 'analyser_max_files', 'analyser_max_threads',
+                    'use_forest', 'use_adaptive_weights', 'num_seed_tracks', 'seed_strict_order', 'lastfm_weighting_weight', 'playcount_influence', 'analyser_ignore_dirs', 'analyser_max_files', 'analyser_max_threads',
                     'analyser_ignore_txt', 'match_all_genres');
 }
 
@@ -60,10 +60,22 @@ sub beforeRender {
     my $analyserBinary = Slim::Utils::Misc::findbin('bliss-analyser');
     $paramRef->{'no_analyser_binary'} = !$analyserBinary;
     $paramRef->{'lastmix_available'} = Slim::Utils::PluginManager->isEnabled('Plugins::LastMix::Plugin') ? 1 : 0;
+    $paramRef->{'statistics_enabled'} = main::STATISTICS ? 1 : 0;
 }
 
 sub handler {
     my ($class, $client, $paramRef) = @_;
+    for my $setting (
+        ['pref_lastfm_weighting_weight', 0, 100],
+        ['pref_playcount_influence', -100, 100],
+    ) {
+        my ($name, $minimum, $maximum) = @$setting;
+        next unless defined $paramRef->{$name};
+        my $value = int($paramRef->{$name});
+        $value = $minimum if $value < $minimum;
+        $value = $maximum if $value > $maximum;
+        $paramRef->{$name} = $value;
+    }
     return $class->SUPER::handler($client, $paramRef);
 }
 
