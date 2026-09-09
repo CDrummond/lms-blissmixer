@@ -1,6 +1,9 @@
 0.11.0
 ------
-1. Add SlimPing support.
+1. Add Last.fm artist context to all strategies - thanks to chrober.
+2. Optionally take play-counts into consideration when choosing tracks - thanks
+   to chrober.
+3. Add SlimPing support.
 
 0.10.0
 ------
